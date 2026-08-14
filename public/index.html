@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <!-- Mencegah Zoom & Auto Size Layar -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ALIGHT HUB - Pro Tools</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -30,43 +31,11 @@
 
         .app-container {
             width: 100%;
-            max-width: 480px; 
+            max-width: 480px; /* Ukuran pas untuk HP dan elegan di PC */
             display: flex;
             flex-direction: column;
             gap: 20px;
-            position: relative;
         }
-
-        /* --- GLOBAL TOAST (GUI NOTIFIKASI MODERN) --- */
-        .global-toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            z-index: 9999;
-            padding: 14px 24px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid;
-        }
-        .global-toast.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
-        }
-        /* Style Hitam Putih untuk Sukses & Gagal */
-        .global-toast.success { background: #ffffff; color: #000000; border-color: #ffffff; }
-        .global-toast.error { background: #0a0a0a; color: #ffffff; border-color: #333333; }
 
         /* Navigasi / Header */
         .header {
@@ -141,21 +110,18 @@
         .qris-box { display: none; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--surface-border); }
         .qris-box img { max-width: 180px; border-radius: 12px; background: #fff; padding: 10px; margin-bottom: 10px; }
 
-        /* Static Output Card for Tool */
-        .tool-output {
+        /* Notification Toast (Pengganti Output) */
+        .toast {
             padding: 15px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
             text-align: center; margin-top: 15px; display: none; line-height: 1.5;
         }
-        .tool-output.success { background: #fff; color: #000; display: block; border: 1px solid #fff; }
-        .tool-output.error { background: #1a0000; color: #ff4d4d; border: 1px solid #330000; display: block; }
+        .toast.success { background: #fff; color: #000; display: block; border: 1px solid #fff; }
+        .toast.error { background: #1a0000; color: #ff4d4d; border: 1px solid #330000; display: block; }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
-    <!-- GUI GLOBAL TOAST NOTIFICATION -->
-    <div id="gui-toast" class="global-toast hidden"></div>
 
     <div class="app-container">
         <!-- Header -->
@@ -207,7 +173,7 @@
         <!-- TOOL SECTION (DASHBOARD) -->
         <div id="dashboard-section" class="hidden tool-wrapper">
             
-            <!-- OVERLAY GEMBOK (Hanya hilang jika lunas Rp2.000) -->
+            <!-- OVERLAY GEMBOK (Hanya hilang jika lunas 2k) -->
             <div class="lock-overlay" id="lock-screen">
                 <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 <h2>Akses Terkunci</h2>
@@ -234,13 +200,13 @@
                 </div>
             </div>
 
-            <!-- MAIN TOOL -->
+            <!-- MAIN TOOL (Hanya bisa disentuh jika gembok hilang) -->
             <div class="card" style="border-radius: 0; min-height: 400px; padding-bottom: 40px;">
                 <h2>Proses Premium</h2>
                 <p class="desc">Sistem pembuatan akun premium otomatis.</p>
                 
-                <!-- Output Khusus Tool -->
-                <div id="tool-output" class="tool-output hidden"></div>
+                <!-- Toast Pesan (Pengganti Output) -->
+                <div id="app-toast" class="toast hidden"></div>
 
                 <div class="input-group" style="margin-top: 20px;">
                     <label>1. Masukkan Target Email (Gmail)</label>
