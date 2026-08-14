@@ -13,26 +13,26 @@ function showNotification(msg, type) {
     setTimeout(() => { toast.className = 'global-toast hidden'; }, 4000);
 }
 
-// --- UI TABS ---
+// --- UI TABS (PERBAIKAN TOMBOL LOGIN & DAFTAR) ---
 function switchAuthTab(tab) {
-    document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
-    document.getElementById('form-register').classList.toggle('hidden', tab === 'login');
-    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-    document.getElementById('tab-reg').classList.toggle('active', tab === 'login');
+    const isLogin = tab === 'login';
+    document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+    document.getElementById('form-register').classList.toggle('hidden', isLogin);
+    
+    // Toggle class active agar warna abu-abu berpindah dengan benar ke tombol yang diklik
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-reg').classList.toggle('active', !isLogin);
 }
 
 function switchDashTab(tab) {
-    // Hide all
     document.getElementById('section-tool').classList.add('hidden');
     document.getElementById('section-time').classList.add('hidden');
     document.getElementById('section-history').classList.add('hidden');
     
-    // Remove active state
     document.getElementById('tab-menu-tool').classList.remove('active');
     document.getElementById('tab-menu-time').classList.remove('active');
     document.getElementById('tab-menu-history').classList.remove('active');
     
-    // Show selected
     document.getElementById(`section-${tab}`).classList.remove('hidden');
     document.getElementById(`tab-menu-${tab}`).classList.add('active');
 }
@@ -103,7 +103,6 @@ function logout() {
 function checkPremiumStatus(user) {
     const lockScreen = document.getElementById('lock-screen');
     
-    // Clear old timer
     if(countdownInterval) clearInterval(countdownInterval);
 
     const updateTimer = () => {
@@ -113,12 +112,10 @@ function checkPremiumStatus(user) {
         if (diff > 0) {
             lockScreen.classList.add('hidden'); 
             
-            // Format HH:MM:SS
             let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             let seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
-            // Add leading zeros
             hours = hours < 10 ? '0' + hours : hours;
             minutes = minutes < 10 ? '0' + minutes : minutes;
             seconds = seconds < 10 ? '0' + seconds : seconds;
@@ -135,7 +132,7 @@ function checkPremiumStatus(user) {
     countdownInterval = setInterval(updateTimer, 1000);
 }
 
-// --- LOGIKA PEMBAYARAN & HISTORY ---
+// --- LOGIKA PEMBAYARAN, PERPANJANG & HISTORY ---
 function renderHistory(username) {
     const historyDb = JSON.parse(localStorage.getItem('am_history') || '[]');
     const userHistory = historyDb.filter(h => h.username === username);
@@ -147,7 +144,6 @@ function renderHistory(username) {
     }
 
     container.innerHTML = '';
-    // Reverse array to show newest first
     userHistory.reverse().forEach(item => {
         container.innerHTML += `
             <li>
@@ -182,8 +178,7 @@ async function bayarQris() {
             document.getElementById('qris-box').style.display = 'block';
             document.getElementById('qris-img').src = data.data.qrImage;
             
-            // Mulai Auto-check transaksi
-            pollQrisStatus(data.data.depositId);
+            pollQrisStatus(data.data.depositId, 'Beli Akses Baru');
         } else {
             showNotification("Sistem pembayaran gangguan.", "error");
             btn.textContent = "Beli Akses (Rp 2.000)";
@@ -196,8 +191,36 @@ async function bayarQris() {
     }
 }
 
+// Fungsi Khusus Tombol Perpanjang Akses
+async function perpanjangAkses() {
+    try {
+        const res = await fetch('/api/create-qris', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: 2000 })
+        });
+        const data = await res.json();
+
+        if (data && data.success && data.data) {
+            // Arahkan otomatis ke tab alat agar user bisa scan QRIS di gembok layar
+            switchDashTab('tool');
+            
+            const btn = document.getElementById('btn-unlock');
+            btn.style.display = 'none';
+            document.getElementById('qris-box').style.display = 'block';
+            document.getElementById('qris-img').src = data.data.qrImage;
+            
+            pollQrisStatus(data.data.depositId, 'Perpanjangan Akses (3 Hari)');
+        } else {
+            showNotification("Gagal membuat QRIS perpanjangan.", "error");
+        }
+    } catch (err) {
+        showNotification("Error jaringan server.", "error");
+    }
+}
+
 // Auto-check jika lunas
-function pollQrisStatus(trxId) {
+function pollQrisStatus(trxId, labelItem) {
     if (qrisInterval) clearInterval(qrisInterval);
 
     qrisInterval = setInterval(async () => {
@@ -209,17 +232,18 @@ function pollQrisStatus(trxId) {
             });
             const data = await res.json();
 
-            // Jika status pembayaran sukses (LUNAS)
             if (data.status === true && data.data && (data.data.status === "success" || data.data.status === "already")) {
                 clearInterval(qrisInterval);
                 
-                // 1. Tampilkan Notifikasi GUI SUKSES
-                showNotification("Pembelian Sukses! Akses Terbuka.", "success");
-                document.getElementById('qris-status').textContent = "Pembayaran Berhasil! Membuka akses...";
+                showNotification("Pembayaran Sukses! Waktu Akses Ditambahkan.", "success");
+                document.getElementById('qris-status').textContent = "Pembayaran Berhasil!";
 
-                // 2. Update Database & Sisa Waktu (3 Hari)
+                // Update Waktu (+3 Hari dari waktu sekarang atau dari waktu sisa sebelumnya jika belum habis)
                 let user = JSON.parse(localStorage.getItem('am_user'));
-                user.premium_until = new Date().getTime() + 259200000; // 3 hari
+                let now = new Date().getTime();
+                let baseTime = user.premium_until > now ? user.premium_until : now;
+                user.premium_until = baseTime + 259200000; // Tambah 3 hari
+                
                 localStorage.setItem('am_user', JSON.stringify(user));
                 
                 let db = JSON.parse(localStorage.getItem('am_db'));
@@ -229,19 +253,18 @@ function pollQrisStatus(trxId) {
                     localStorage.setItem('am_db', JSON.stringify(db)); 
                 }
 
-                // 3. Catat ke History Pembelian
+                // Catat ke History Pembelian
                 let hDb = JSON.parse(localStorage.getItem('am_history') || '[]');
                 hDb.push({
                     username: user.username,
-                    item: 'Akses Alat Premium (3 Hari)',
+                    item: labelItem,
                     date: new Date().toLocaleString('id-ID'),
                     status: 'success'
                 });
                 localStorage.setItem('am_history', JSON.stringify(hDb));
 
-                // 4. Refresh tampilan & hilangkan Gembok
                 setTimeout(() => {
-                    initApp(); // Restart tampilan untuk update waktu & history
+                    initApp(); 
                     document.getElementById('btn-unlock').style.display = 'block';
                     document.getElementById('btn-unlock').disabled = false;
                     document.getElementById('btn-unlock').textContent = "Beli Akses (Rp 2.000)";
