@@ -13,7 +13,7 @@ function showNotification(msg, type) {
     setTimeout(() => { toast.className = 'global-toast hidden'; }, 4000);
 }
 
-// --- UI TABS ---
+// --- UI TABS AUTH ---
 function switchAuthTab(tab) {
     const isLogin = tab === 'login';
     document.getElementById('form-login').classList.toggle('hidden', !isLogin);
@@ -22,45 +22,70 @@ function switchAuthTab(tab) {
     document.getElementById('tab-reg').classList.toggle('active', !isLogin);
 }
 
+// --- UI TABS DASHBOARD ---
 function switchDashTab(tab) {
     const sections = ['dashboard', 'profil', 'history'];
     sections.forEach(s => {
-        document.getElementById(`section-${s}`).classList.add('hidden');
-        document.getElementById(`tab-menu-${s}`).classList.remove('active');
+        const sec = document.getElementById(`section-${s}`);
+        const tabEl = document.getElementById(`tab-menu-${s}`);
+        if (sec) sec.classList.add('hidden');
+        if (tabEl) tabEl.classList.remove('active');
     });
     
-    document.getElementById(`section-${tab}`).classList.remove('hidden');
-    document.getElementById(`tab-menu-${tab}`).classList.add('active');
+    const targetSec = document.getElementById(`section-${tab}`);
+    const targetTab = document.getElementById(`tab-menu-${tab}`);
+    if (targetSec) targetSec.classList.remove('hidden');
+    if (targetTab) targetTab.classList.add('active');
+
+    // Refresh history if history tab selected
+    if (tab === 'history') {
+        const user = JSON.parse(localStorage.getItem('am_user'));
+        if (user) renderAllHistories(user.username);
+    }
 }
 
 // --- INITIALIZATION ---
 function initApp() {
     const user = JSON.parse(localStorage.getItem('am_user'));
+    const authSection = document.getElementById('auth-section');
+    const dashboardMenu = document.getElementById('dashboard-menu');
+    const sectionDashboard = document.getElementById('section-dashboard');
+    const navUser = document.getElementById('nav-user');
+
     if (user) {
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('dashboard-menu').classList.remove('hidden');
-        document.getElementById('section-dashboard').classList.remove('hidden');
+        // Hide login card completely
+        if (authSection) authSection.classList.add('hidden');
+        if (dashboardMenu) dashboardMenu.classList.remove('hidden');
+        if (sectionDashboard) sectionDashboard.classList.remove('hidden');
         
-        document.getElementById('nav-user').innerHTML = `<button class="btn-outline" onclick="logout()">Logout</button>`;
-        document.getElementById('target-email').value = user.email || ''; 
-        document.getElementById('profile-username').value = user.username || '';
+        if (navUser) navUser.innerHTML = `<button class="btn-outline" onclick="logout()">Logout</button>`;
+        
+        const targetEmailInput = document.getElementById('target-email');
+        const profileUsernameInput = document.getElementById('profile-username');
+        if (targetEmailInput) targetEmailInput.value = user.email || ''; 
+        if (profileUsernameInput) profileUsernameInput.value = user.username || '';
         
         // Render PP
-        if (user.avatar) {
-            document.getElementById('avatar-preview').innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        } else {
-            document.getElementById('avatar-preview').textContent = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (avatarPreview) {
+            if (user.avatar) {
+                avatarPreview.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                avatarPreview.textContent = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+            }
         }
         
         checkPremiumStatus(user);
         renderAllHistories(user.username);
     } else {
-        document.getElementById('auth-section').classList.remove('hidden');
-        document.getElementById('dashboard-menu').classList.add('hidden');
-        document.getElementById('section-dashboard').classList.add('hidden');
-        document.getElementById('section-profil').classList.add('hidden');
-        document.getElementById('section-history').classList.add('hidden');
-        document.getElementById('nav-user').innerHTML = `<button class="btn-outline">Guest</button>`;
+        if (authSection) authSection.classList.remove('hidden');
+        if (dashboardMenu) dashboardMenu.classList.add('hidden');
+        if (sectionDashboard) sectionDashboard.classList.add('hidden');
+        const sectionProfil = document.getElementById('section-profil');
+        const sectionHistory = document.getElementById('section-history');
+        if (sectionProfil) sectionProfil.classList.add('hidden');
+        if (sectionHistory) sectionHistory.classList.add('hidden');
+        if (navUser) navUser.innerHTML = `<button class="btn-outline">Guest</button>`;
     }
 }
 
@@ -122,7 +147,10 @@ function updateProfilePic(e) {
             localStorage.setItem('am_db', JSON.stringify(db));
         }
 
-        document.getElementById('avatar-preview').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (avatarPreview) {
+            avatarPreview.innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        }
         showNotification("Foto profil berhasil diperbarui!", "success");
     };
     reader.readAsDataURL(file);
@@ -153,7 +181,8 @@ function handleUpdateProfile(e) {
     }
 
     showNotification("Profil berhasil diperbarui!", "success");
-    document.getElementById('profile-password').value = '';
+    const passInput = document.getElementById('profile-password');
+    if (passInput) passInput.value = '';
     initApp();
 }
 
@@ -162,15 +191,15 @@ function checkPremiumStatus(user) {
     const lockScreen = document.getElementById('lock-screen');
     const perpanjangContainer = document.getElementById('dashboard-perpanjang-container');
     
-    if(countdownInterval) clearInterval(countdownInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
 
     const updateTimer = () => {
         const now = new Date().getTime();
         const diff = user.premium_until - now;
 
         if (diff > 0) {
-            lockScreen.classList.add('hidden'); 
-            perpanjangContainer.classList.remove('hidden'); // Muncul di dashboard jika sudah berlangganan
+            if (lockScreen) lockScreen.classList.add('hidden'); 
+            if (perpanjangContainer) perpanjangContainer.classList.remove('hidden'); 
             
             let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -180,12 +209,14 @@ function checkPremiumStatus(user) {
             minutes = minutes < 10 ? '0' + minutes : minutes;
             seconds = seconds < 10 ? '0' + seconds : seconds;
             
-            document.getElementById('time-display').textContent = `${hours}:${minutes}:${seconds}`;
+            const timeDisplay = document.getElementById('time-display');
+            if (timeDisplay) timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
         } else {
-            lockScreen.classList.remove('hidden'); 
-            perpanjangContainer.classList.add('hidden'); // Sembunyikan jika belum/habis
-            document.getElementById('time-display').textContent = "AKSES HABIS";
-            if(countdownInterval) clearInterval(countdownInterval);
+            if (lockScreen) lockScreen.classList.remove('hidden'); 
+            if (perpanjangContainer) perpanjangContainer.classList.add('hidden'); 
+            const timeDisplay = document.getElementById('time-display');
+            if (timeDisplay) timeDisplay.textContent = "AKSES HABIS";
+            if (countdownInterval) clearInterval(countdownInterval);
         }
     };
 
@@ -202,36 +233,61 @@ function renderAllHistories(username) {
 
     // 1. Transaksi
     const cTrx = document.getElementById('history-trx-container');
-    cTrx.innerHTML = historyTrx.length === 0 ? `<li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>` : '';
-    historyTrx.slice().reverse().forEach(item => {
-        cTrx.innerHTML += `<li class="history-item"><div><div><strong>${item.item}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div style="text-align:right;"><div>Rp 2.000</div><span class="success">✔ Berhasil</span></div></li>`;
-    });
+    if (cTrx) {
+        if (historyTrx.length === 0) {
+            cTrx.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>`;
+        } else {
+            cTrx.innerHTML = '';
+            historyTrx.slice().reverse().forEach(item => {
+                cTrx.innerHTML += `<li class="history-item"><div><div><strong>${item.item}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div style="text-align:right;"><div>Rp 2.000</div><span class="success">✔ Berhasil</span></div></li>`;
+            });
+        }
+    }
 
     // 2. Pembuatan Akun
     const cCreate = document.getElementById('history-create-container');
-    cCreate.innerHTML = historyCreate.length === 0 ? `<li class="history-item" style="justify-content: center;">Belum ada riwayat pembuatan akun.</li>` : '';
-    historyCreate.slice().reverse().forEach(item => {
-        cCreate.innerHTML += `<li class="history-item"><div><div><strong>Target: ${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="${item.status}">${item.status === 'success' ? '✔ Sukses' : '❌ Gagal'}</span></div></li>`;
-    });
+    if (cCreate) {
+        if (historyCreate.length === 0) {
+            cCreate.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada riwayat pembuatan akun.</li>`;
+        } else {
+            cCreate.innerHTML = '';
+            historyCreate.slice().reverse().forEach(item => {
+                cCreate.innerHTML += `<li class="history-item"><div><div><strong>Target: ${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="${item.status}">${item.status === 'success' ? '✔ Sukses' : '❌ Gagal'}</span></div></li>`;
+            });
+        }
+    }
 
     // 3. Email Berhasil Premium
     const cSuccess = document.getElementById('history-success-container');
-    cSuccess.innerHTML = historySuccess.length === 0 ? `<li class="history-item" style="justify-content: center;">Belum ada email berhasil.</li>` : '';
-    historySuccess.slice().reverse().forEach(item => {
-        cSuccess.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="success">✔ Aktif</span></div></li>`;
-    });
+    if (cSuccess) {
+        if (historySuccess.length === 0) {
+            cSuccess.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada email berhasil.</li>`;
+        } else {
+            cSuccess.innerHTML = '';
+            historySuccess.slice().reverse().forEach(item => {
+                cSuccess.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="success">✔ Aktif</span></div></li>`;
+            });
+        }
+    }
 
     // 4. Email Gagal Premium
     const cFailed = document.getElementById('history-failed-container');
-    cFailed.innerHTML = historyFailed.length === 0 ? `<li class="history-item" style="justify-content: center;">Belum ada email gagal.</li>` : '';
-    historyFailed.slice().reverse().forEach(item => {
-        cFailed.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px; color:#ff4d4d;">Alasan: ${item.reason}</div></div><div><span class="failed">❌ Gagal</span></div></li>`;
-    });
+    if (cFailed) {
+        if (historyFailed.length === 0) {
+            cFailed.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada email gagal.</li>`;
+        } else {
+            cFailed.innerHTML = '';
+            historyFailed.slice().reverse().forEach(item => {
+                cFailed.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px; color:#ff4d4d;">Alasan: ${item.reason}</div></div><div><span class="failed">❌ Gagal</span></div></li>`;
+            });
+        }
+    }
 }
 
 // --- PEMBAYARAN & QRIS ---
 async function bayarQris() {
     const btn = document.getElementById('btn-unlock');
+    if (!btn) return;
     btn.textContent = "Memuat Sistem Pembayaran...";
     btn.disabled = true;
 
@@ -272,10 +328,10 @@ async function perpanjangAkses() {
 
         if (data && data.success && data.data) {
             const lockScreen = document.getElementById('lock-screen');
-            lockScreen.classList.remove('hidden');
+            if (lockScreen) lockScreen.classList.remove('hidden');
             
             const btn = document.getElementById('btn-unlock');
-            btn.style.display = 'none';
+            if (btn) btn.style.display = 'none';
             document.getElementById('qris-box').style.display = 'block';
             document.getElementById('qris-img').src = data.data.qrImage;
             
@@ -304,7 +360,8 @@ function pollQrisStatus(trxId, labelItem) {
                 clearInterval(qrisInterval);
                 
                 showNotification("Pembayaran Sukses! Akses Diperbarui.", "success");
-                document.getElementById('qris-status').textContent = "Pembayaran Berhasil!";
+                const qrisStatusEl = document.getElementById('qris-status');
+                if (qrisStatusEl) qrisStatusEl.textContent = "Pembayaran Berhasil!";
 
                 let user = JSON.parse(localStorage.getItem('am_user'));
                 let now = new Date().getTime();
@@ -315,7 +372,7 @@ function pollQrisStatus(trxId, labelItem) {
                 
                 let db = JSON.parse(localStorage.getItem('am_db') || '[]');
                 let dbIndex = db.findIndex(u => u.username === user.username);
-                if(dbIndex !== -1) { 
+                if (dbIndex !== -1) { 
                     db[dbIndex] = user; 
                     localStorage.setItem('am_db', JSON.stringify(db)); 
                 }
@@ -332,11 +389,14 @@ function pollQrisStatus(trxId, labelItem) {
 
                 setTimeout(() => {
                     initApp(); 
-                    document.getElementById('btn-unlock').style.display = 'block';
-                    document.getElementById('btn-unlock').disabled = false;
-                    document.getElementById('btn-unlock').textContent = "Berlangganan Sekarang (Rp 2.000)";
+                    const btnUnlock = document.getElementById('btn-unlock');
+                    if (btnUnlock) {
+                        btnUnlock.style.display = 'block';
+                        btnUnlock.disabled = false;
+                        btnUnlock.textContent = "Berlangganan Sekarang (Rp 2.000)";
+                    }
                     document.getElementById('qris-box').style.display = 'none';
-                    document.getElementById('qris-status').textContent = "Status: Menunggu Pembayaran...";
+                    if (qrisStatusEl) qrisStatusEl.textContent = "Status: Menunggu Pembayaran...";
                 }, 2000);
             }
         } catch (e) {
@@ -348,6 +408,7 @@ function pollQrisStatus(trxId, labelItem) {
 // --- ALAT UTAMA & HISTORY CREATION ---
 function setToolOutput(msg, type) {
     const output = document.getElementById('tool-output');
+    if (!output) return;
     output.innerHTML = msg;
     output.className = `tool-output ${type}`; 
 }
@@ -358,7 +419,7 @@ async function kirimEmail() {
     if (!email) return showNotification("Masukkan email target terlebih dahulu.", "error");
     
     currentEmail = email;
-    btn.textContent = "Mengirim...";
+    if (btn) btn.textContent = "Mengirim...";
     setToolOutput("Mengirim email...", "success");
 
     try {
@@ -368,7 +429,7 @@ async function kirimEmail() {
             body: JSON.stringify({ email })
         });
         const data = await res.json();
-        btn.textContent = "Kirim Link Verifikasi";
+        if (btn) btn.textContent = "Kirim Link Verifikasi";
         
         if (res.ok) {
             setToolOutput(`Cek Inbox Gmail <b>${email}</b>, lalu salin link-nya ke form di bawah.`, "success");
@@ -376,7 +437,7 @@ async function kirimEmail() {
             setToolOutput(`Gagal mengirim: ${data.message || data.error}`, "error");
         }
     } catch (err) {
-        btn.textContent = "Kirim Link Verifikasi";
+        if (btn) btn.textContent = "Kirim Link Verifikasi";
         setToolOutput("Gagal mengirim email. Periksa koneksi.", "error");
     }
 }
@@ -386,7 +447,7 @@ async function verifikasiLink() {
     const btn = document.getElementById('btn-verify');
     if (!link) return showNotification("Tempel link verifikasi terlebih dahulu.", "error");
     
-    btn.textContent = "Memproses...";
+    if (btn) btn.textContent = "Memproses...";
     setToolOutput("Mengeksekusi proses premium...", "success");
 
     let user = JSON.parse(localStorage.getItem('am_user'));
@@ -399,7 +460,7 @@ async function verifikasiLink() {
             body: JSON.stringify({ link: link, email: currentEmail })
         });
         const data = await res.json();
-        btn.textContent = "Proses & Aktifkan Premium";
+        if (btn) btn.textContent = "Proses & Aktifkan Premium";
 
         let hCreate = JSON.parse(localStorage.getItem('am_history_create') || '[]');
 
@@ -432,7 +493,7 @@ async function verifikasiLink() {
         }
         renderAllHistories(user.username);
     } catch (err) {
-        btn.textContent = "Proses & Aktifkan Premium";
+        if (btn) btn.textContent = "Proses & Aktifkan Premium";
         setToolOutput(`❌ <b>Gagal Premium</b><br>Kesalahan jaringan server.`, "error");
     }
 }
