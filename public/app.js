@@ -31,44 +31,50 @@ document.getElementById('btn-pay').addEventListener('click', async () => {
     const outputBox = document.getElementById('response-output');
     outputBox.textContent = "Membuat QRIS Rp2.000...";
 
-    // 1. Request QRIS ke backend
+    // 1. Request QRIS ke backend kita
     const res = await callInternalApi('/api/create-qris', { email: emailValue });
     
-    if (res && res.qris_url) { // Sesuaikan key response dari ramashop (misal: qris_url atau qr_image)
-        document.getElementById('qris-image').src = res.qris_url;
+    // Pastikan response sukses berdasarkan dokumentasi RamaShop (success: true)
+    if (res && res.success === true && res.data) { 
+        
+        // Ambil URL QR dan tampilkan ke layar
+        document.getElementById('qris-image').src = res.data.qrImage;
         document.getElementById('qris-container').style.display = 'block';
         
-        // Simpan trx_id untuk pengecekan status
-        const trxId = res.trx_id; 
-
-        // 2. Lakukan pengecekan status otomatis tiap 3 detik (Polling)
-        document.getElementById('qris-status').textContent = "Menunggu Pembayaran...";
+        // Tampilkan nominal yang harus dibayar (termasuk kode unik)
+        document.getElementById('qris-status').innerHTML = `Menunggu Pembayaran: <br><b>Rp ${res.data.totalAmount}</b><br><small>(Harus sesuai hingga 3 digit terakhir!)</small>`;
         
+        // Simpan ID Deposit untuk dicek
+        const depositId = res.data.depositId; 
+
         if (checkInterval) clearInterval(checkInterval);
 
+        // 2. Lakukan pengecekan status otomatis tiap 5 detik (Sesuai cache server RamaShop)
         checkInterval = setInterval(async () => {
             const checkRes = await fetch('/api/check-qris', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ trx_id: trxId })
+                body: JSON.stringify({ trx_id: depositId })
             });
             const checkData = await checkRes.json();
 
-            // Jika status pembayaran sukses (biasanya bernilai "PAID" atau "success")
-            if (checkData.status === "PAID" || checkData.status === "success") {
+            // Jika status sukses atau already (sesuai docs RamaShop)
+            if (checkData.status === true && checkData.data && (checkData.data.status === "success" || checkData.data.status === "already")) {
                 clearInterval(checkInterval);
-                document.getElementById('qris-status').textContent = " Pembayaran Berhasil! Mengirim email...";
+                document.getElementById('qris-status').innerHTML = "✅ <b>Pembayaran Berhasil! Mengirim email...</b>";
                 
-                // 3. OTOMATIS JALANKAN /api/send SETELAH LUNAS
+                // 3. OTOMATIS JALANKAN /api/send
                 sessionStorage.setItem('last_sent_email', emailValue);
                 const sendRes = await callInternalApi('/api/send', { email: emailValue });
 
-                // 4. Buka kunci bagian verifikasi
+                // 4. Buka kunci form verifikasi
                 document.getElementById('verify-section').style.opacity = '1';
                 document.getElementById('verify-section').style.pointerEvents = 'auto';
                 alert("Pembayaran lunas! Link verifikasi telah dikirim ke email Anda.");
             }
-        }, 3000); // Cek tiap 3 detik
+        }, 5000); // Polling setiap 5 detik
+    } else {
+        alert("Gagal membuat QRIS, pastikan saldo akun API cukup dan API Key valid.");
     }
 });
 
