@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlightMotion Premium Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #f9f9f9; }
+        .section { background: white; margin-bottom: 25px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        input { box-sizing: border-box; width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .btn { padding: 12px 20px; cursor: pointer; background: #0070f3; color: white; border: none; border-radius: 5px; width: 100%; font-size: 16px; font-weight: bold; }
+        .btn:hover { background: #005bb5; }
+        .qris-box { text-align: center; display: none; margin-top: 15px; }
+        .qris-box img { max-width: 250px; border: 1px solid #ccc; padding: 10px; background: white; border-radius: 5px; }
+        pre { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; overflow-x: auto; min-height: 80px; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <h2>AlightMotion Dashboard (Bayar Rp2.000)</h2>
+
+    <div class="section">
+        <h3>1. Masukkan Email & Bayar QRIS</h3>
+        <p>Masukkan email Anda, lalu selesaikan pembayaran Rp2.000 untuk memproses sistem.</p>
+        <input type="email" id="email-input" placeholder="contoh@gmail.com" required>
+        <button class="btn" id="btn-pay">Buat QRIS Rp2.000</button>
+
+        <!-- Area QRIS -->
+        <div class="qris-box" id="qris-container">
+            <p><b>Silakan Scan QRIS di bawah (Rp2.000):</b></p>
+            <img id="qris-image" src="" alt="QRIS Code">
+            <p id="qris-status" style="color: orange; font-weight: bold; margin-top: 10px;">Menunggu Pembayaran...</p>
+        </div>
+    </div>
+
+    <div class="section" id="verify-section" style="opacity: 0.5; pointer-events: none;">
+        <h3>2. Verifikasi Token / Link</h3>
+        <p><i>(Fitur ini akan terbuka otomatis setelah pembayaran QRIS berhasil)</i></p>
+        <input type="text" id="verify-input" placeholder="Tempel Link Verifikasi dari Email..." required>
+        <button class="btn" id="btn-verify">Verifikasi Link</button>
+    </div>
+
+    <h3>Status / Response API:</h3>
+    <pre id="response-output">Menunggu tindakan...</pre>
+
+    <script src="app.js"></script>
+</body>
+</html>
