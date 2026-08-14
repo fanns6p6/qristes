@@ -1,100 +1,49 @@
 let qrisInterval = null;
-let countdownInterval = null;
+let currentEmail = "";
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-// --- GUI NOTIFIKASI & POPUP MODERN ---
+// --- SISTEM GUI NOTIFIKASI (TOAST MODERN) ---
 function showNotification(msg, type) {
     const toast = document.getElementById('gui-toast');
+    
+    // Ikon berdasarkan tipe (Sukses / Error)
     const icon = type === 'success' ? '✔' : '❌';
+    
     toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
     toast.className = `global-toast ${type} show`;
-    setTimeout(() => { toast.className = 'global-toast hidden'; }, 4000);
+
+    // Hilang otomatis setelah 3.5 detik
+    setTimeout(() => {
+        toast.className = 'global-toast hidden';
+    }, 3500);
 }
 
-function showModal(title, desc) {
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-desc').textContent = desc;
-    document.getElementById('modern-modal').classList.add('show');
-}
-
-function closeModal() {
-    document.getElementById('modern-modal').classList.remove('show');
-}
-
-// --- UI TABS AUTH & PRE-LOGIN ---
-function switchAuthTab(tab) {
+// --- UI & AUTH ---
+function switchTab(tab) {
     document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
-    document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
-    document.getElementById('form-tutor').classList.toggle('hidden', tab !== 'tutor');
-    
+    document.getElementById('form-register').classList.toggle('hidden', tab === 'login');
     document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-    document.getElementById('tab-reg').classList.toggle('active', tab === 'register');
-    document.getElementById('tab-tutor').classList.toggle('active', tab === 'tutor');
+    document.getElementById('tab-reg').classList.toggle('active', tab === 'login');
 }
 
-// --- UI TABS DASHBOARD ---
-function switchDashTab(tab) {
-    const sections = ['dashboard', 'profil', 'history'];
-    sections.forEach(s => {
-        const sec = document.getElementById(`section-${s}`);
-        const tabEl = document.getElementById(`tab-menu-${s}`);
-        if (sec) sec.classList.add('hidden');
-        if (tabEl) tabEl.classList.remove('active');
-    });
-    
-    const targetSec = document.getElementById(`section-${tab}`);
-    const targetTab = document.getElementById(`tab-menu-${tab}`);
-    if (targetSec) targetSec.classList.remove('hidden');
-    if (targetTab) targetTab.classList.add('active');
-
-    if (tab === 'history') {
-        const user = JSON.parse(localStorage.getItem('am_user'));
-        if (user) renderAllHistories(user.username);
-    }
-}
-
-// --- INITIALIZATION ---
 function initApp() {
     const user = JSON.parse(localStorage.getItem('am_user'));
-    const authSection = document.getElementById('auth-section');
-    const dashboardMenu = document.getElementById('dashboard-menu');
-    const sectionDashboard = document.getElementById('section-dashboard');
-    const navUser = document.getElementById('nav-user');
-
     if (user) {
-        if (authSection) authSection.classList.add('hidden');
-        if (dashboardMenu) dashboardMenu.classList.remove('hidden');
-        if (sectionDashboard) sectionDashboard.classList.remove('hidden');
-        
-        if (navUser) navUser.innerHTML = `<button class="btn-outline" onclick="logout()">Logout</button>`;
-        
-        const profileUsernameInput = document.getElementById('profile-username');
-        if (profileUsernameInput) profileUsernameInput.value = user.username || '';
-        
-        // Render PP
-        const avatarPreview = document.getElementById('avatar-preview');
-        if (avatarPreview) {
-            if (user.avatar) {
-                avatarPreview.innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-            } else {
-                avatarPreview.textContent = user.username ? user.username.charAt(0).toUpperCase() : 'U';
-            }
-        }
-        
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        document.getElementById('nav-user').innerHTML = `
+            <button class="btn-outline" onclick="logout()">Logout (${user.username})</button>
+        `;
+        document.getElementById('target-email').value = user.email; // Autofill
         checkPremiumStatus(user);
-        renderAllHistories(user.username);
     } else {
-        if (authSection) authSection.classList.remove('hidden');
-        if (dashboardMenu) dashboardMenu.classList.add('hidden');
-        if (sectionDashboard) sectionDashboard.classList.add('hidden');
-        document.getElementById('section-profil').classList.add('hidden');
-        document.getElementById('section-history').classList.add('hidden');
-        if (navUser) navUser.innerHTML = `<button class="btn-outline">Guest</button>`;
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('dashboard-section').classList.add('hidden');
+        document.getElementById('nav-user').innerHTML = `<button class="btn-outline">Guest</button>`;
     }
 }
 
-// --- AUTHENTICATION ---
 function handleRegister(e) {
     e.preventDefault();
     const user = document.getElementById('reg-user').value.trim();
@@ -102,14 +51,18 @@ function handleRegister(e) {
     const pass = document.getElementById('reg-pass').value.trim();
     
     let db = JSON.parse(localStorage.getItem('am_db') || '[]');
+    
+    // Jika Username / Email sudah ada
     if (db.find(u => u.username === user || u.email === email)) {
-        return showNotification("Username / Email sudah terpakai.", "error");
+        return showNotification("Daftar Gagal! Username atau Email sudah terpakai.", "error");
     }
     
-    db.push({ username: user, email, pass, premium_until: 0, avatar: "" });
+    // Jika berhasil daftar
+    db.push({ username: user, email, pass, premium_until: 0 });
     localStorage.setItem('am_db', JSON.stringify(db));
+    
     showNotification("Daftar Berhasil! Silakan masuk.", "success");
-    switchAuthTab('login');
+    switchTab('login');
 }
 
 function handleLogin(e) {
@@ -124,7 +77,7 @@ function handleLogin(e) {
         localStorage.setItem('am_user', JSON.stringify(user));
         initApp();
     } else {
-        showNotification("Cek kembali data Anda.", "error");
+        showNotification("Login Gagal! Username/Email atau Password salah.", "error");
     }
 }
 
@@ -133,259 +86,155 @@ function logout() {
     location.reload();
 }
 
-// --- PROFILE MANAGEMENT ---
-function updateProfilePic(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(uploadEvent) {
-        let base64Image = uploadEvent.target.result;
-        let user = JSON.parse(localStorage.getItem('am_user'));
-        user.avatar = base64Image;
-        localStorage.setItem('am_user', JSON.stringify(user));
-
-        let db = JSON.parse(localStorage.getItem('am_db') || '[]');
-        let idx = db.findIndex(u => u.username === user.username);
-        if (idx !== -1) {
-            db[idx].avatar = base64Image;
-            localStorage.setItem('am_db', JSON.stringify(db));
-        }
-
-        const avatarPreview = document.getElementById('avatar-preview');
-        if (avatarPreview) {
-            avatarPreview.innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        }
-        showNotification("Foto profil diperbarui!", "success");
-    };
-    reader.readAsDataURL(file);
-}
-
-function handleUpdateProfile(e) {
-    e.preventDefault();
-    let user = JSON.parse(localStorage.getItem('am_user'));
-    let newUsername = document.getElementById('profile-username').value.trim();
-    let newPass = document.getElementById('profile-password').value.trim();
-
-    let db = JSON.parse(localStorage.getItem('am_db') || '[]');
-    if (db.find(u => u.username === newUsername && u.username !== user.username)) {
-        return showNotification("Username sudah digunakan.", "error");
-    }
-
-    user.username = newUsername;
-    if (newPass) user.pass = newPass;
-
-    localStorage.setItem('am_user', JSON.stringify(user));
-
-    let idx = db.findIndex(u => u.email === user.email);
-    if (idx !== -1) {
-        db[idx] = user;
-        localStorage.setItem('am_db', JSON.stringify(db));
-    }
-
-    showNotification("Profil berhasil diperbarui!", "success");
-    document.getElementById('profile-password').value = '';
-    initApp();
-}
-
-// --- STATUS & COUNTDOWN ---
+// --- LOGIKA GEMBOK & QRIS ---
 function checkPremiumStatus(user) {
+    const now = new Date().getTime();
     const lockScreen = document.getElementById('lock-screen');
-    const perpanjangContainer = document.getElementById('dashboard-perpanjang-container');
     
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    const updateTimer = () => {
-        const now = new Date().getTime();
-        const diff = user.premium_until - now;
-        const timeDisplay = document.getElementById('time-display');
-
-        if (diff > 0) {
-            // Aktif: Sembunyikan lock, tampilkan tombol perpanjang
-            if (lockScreen) lockScreen.classList.add('hidden'); 
-            if (perpanjangContainer) perpanjangContainer.classList.remove('hidden'); 
-            
-            let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            hours = hours < 10 ? '0' + hours : hours;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-            
-            if (timeDisplay) timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-        } else {
-            // Habis: Tampilkan lock, sembunyikan tombol perpanjang
-            if (lockScreen) lockScreen.classList.remove('hidden'); 
-            if (perpanjangContainer) perpanjangContainer.classList.add('hidden'); 
-            
-            if (timeDisplay) timeDisplay.textContent = "AKSES HABIS";
-            if (countdownInterval) clearInterval(countdownInterval);
-        }
-    };
-
-    updateTimer();
-    countdownInterval = setInterval(updateTimer, 1000);
+    if (user.premium_until > now) {
+        lockScreen.classList.add('hidden'); 
+    } else {
+        lockScreen.classList.remove('hidden'); 
+    }
 }
 
-// --- LOGIKA ALAT GENERATOR & VALIDASI ---
-function prosesPembuatanAkun() {
-    const tipeLayanan = document.getElementById('tipe-layanan').value;
-    const emailTarget = document.getElementById('target-email').value.trim();
-
-    // Validasi Popup Modern: Wajib Gmail Fresh untuk Private (VANNZ STORE requirement)
-    if (tipeLayanan === 'private' && !emailTarget) {
-        showModal("Format Tidak Valid", "Setiap memasukkan email wajib Gmail fresh. Harap isi email untuk pembelian tipe Private agar sistem dapat memprosesnya.");
-        return;
-    }
-
-    if (!emailTarget.includes('@gmail.com') && emailTarget !== "") {
-        showModal("Kesalahan Provider", "Sistem hanya menerima pendaftaran menggunakan domain @gmail.com.");
-        return;
-    }
-
-    const btn = document.getElementById('btn-proses');
-    btn.textContent = "Memproses Permintaan...";
+async function bayarQris() {
+    const btn = document.getElementById('btn-unlock');
+    btn.textContent = "Loading QRIS...";
     btn.disabled = true;
 
-    // Simulasi Proses Backend
-    setTimeout(() => {
-        let isSuccess = Math.random() > 0.3; // 70% success rate simulasi
-        let user = JSON.parse(localStorage.getItem('am_user'));
-        let dateStr = new Date().toLocaleString('id-ID');
+    try {
+        const res = await fetch('/api/create-qris', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: 2000 })
+        });
+        const data = await res.json();
 
-        // Log Creat Akun
-        saveHistory('am_history_create', { username: user.username, email: emailTarget || 'Akun Sharing', status: isSuccess ? 'success' : 'failed', date: dateStr });
-
-        if (isSuccess) {
-            showNotification("Akun Premium Berhasil Dibuat!", "success");
-            saveHistory('am_history_success', { username: user.username, email: emailTarget || 'Akun Sharing', date: dateStr });
+        if (data && data.success && data.data) {
+            btn.style.display = 'none';
+            document.getElementById('qris-box').style.display = 'block';
+            document.getElementById('qris-img').src = data.data.qrImage;
+            document.getElementById('qris-amount').textContent = `Rp ${data.data.totalAmount.toLocaleString('id-ID')}`;
+            
+            pollQrisStatus(data.data.depositId);
         } else {
-            showModal("Proses Gagal", "Gagal melakukan generate. Pastikan Gmail belum terdaftar atau coba lagi nanti.");
-            saveHistory('am_history_failed', { username: user.username, email: emailTarget || 'Akun Sharing', reason: 'Timeout limit exceeded', date: dateStr });
+            showNotification("Sistem pembayaran gangguan.", "error");
+            btn.textContent = "Buka Akses (Rp 2.000)";
+            btn.disabled = false;
         }
-
-        btn.textContent = "Proses & Buat Akun";
+    } catch (err) {
+        showNotification("Error jaringan: " + err.message, "error");
+        btn.textContent = "Buka Akses (Rp 2.000)";
         btn.disabled = false;
-        document.getElementById('target-email').value = "";
-    }, 2000);
-}
-
-function saveHistory(key, data) {
-    let history = JSON.parse(localStorage.getItem(key) || '[]');
-    history.push(data);
-    localStorage.setItem(key, JSON.stringify(history));
-}
-
-// --- HISTORIES RENDERING ---
-function renderAllHistories(username) {
-    const historyTrx = JSON.parse(localStorage.getItem('am_history_trx') || '[]').filter(h => h.username === username);
-    const historyCreate = JSON.parse(localStorage.getItem('am_history_create') || '[]').filter(h => h.username === username);
-    const historySuccess = JSON.parse(localStorage.getItem('am_history_success') || '[]').filter(h => h.username === username);
-    const historyFailed = JSON.parse(localStorage.getItem('am_history_failed') || '[]').filter(h => h.username === username);
-
-    // 1. Transaksi
-    const cTrx = document.getElementById('history-trx-container');
-    if (cTrx) {
-        if (historyTrx.length === 0) cTrx.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>`;
-        else {
-            cTrx.innerHTML = '';
-            historyTrx.slice().reverse().forEach(item => {
-                cTrx.innerHTML += `<li class="history-item"><div><div><strong>${item.item}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div style="text-align:right;"><div>Rp 2.000</div><span class="success">✔ Berhasil</span></div></li>`;
-            });
-        }
-    }
-
-    // 2. Pembuatan Akun
-    const cCreate = document.getElementById('history-create-container');
-    if (cCreate) {
-        if (historyCreate.length === 0) cCreate.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada riwayat pembuatan akun.</li>`;
-        else {
-            cCreate.innerHTML = '';
-            historyCreate.slice().reverse().forEach(item => {
-                cCreate.innerHTML += `<li class="history-item"><div><div><strong>Target: ${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="${item.status === 'success' ? 'success' : 'failed'}">${item.status === 'success' ? '✔ Sukses' : '❌ Gagal'}</span></div></li>`;
-            });
-        }
-    }
-
-    // 3. Email Berhasil Premium
-    const cSuccess = document.getElementById('history-success-container');
-    if (cSuccess) {
-        if (historySuccess.length === 0) cSuccess.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada email berhasil.</li>`;
-        else {
-            cSuccess.innerHTML = '';
-            historySuccess.slice().reverse().forEach(item => {
-                cSuccess.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div><span class="success">✔ Aktif</span></div></li>`;
-            });
-        }
-    }
-
-    // 4. Email Gagal Premium
-    const cFailed = document.getElementById('history-failed-container');
-    if (cFailed) {
-        if (historyFailed.length === 0) cFailed.innerHTML = `<li class="history-item" style="justify-content: center;">Belum ada email gagal.</li>`;
-        else {
-            cFailed.innerHTML = '';
-            historyFailed.slice().reverse().forEach(item => {
-                cFailed.innerHTML += `<li class="history-item"><div><div><strong>${item.email}</strong></div><div style="font-size:10px; margin-top:3px; color:#aaa;">Alasan: ${item.reason}</div></div><div><span class="failed">❌ Gagal</span></div></li>`;
-            });
-        }
     }
 }
 
-// --- PEMBAYARAN & QRIS ---
-function bayarQris() {
-    const btn = document.getElementById('btn-unlock');
-    if (!btn) return;
-    
-    document.getElementById('qris-box').style.display = 'block';
-    btn.style.display = 'none';
+function pollQrisStatus(trxId) {
+    if (qrisInterval) clearInterval(qrisInterval);
 
-    // Simulasi dummy pembayaran sukses dalam 5 detik
-    setTimeout(() => {
-        selesaikanPembayaran();
+    qrisInterval = setInterval(async () => {
+        try {
+            const res = await fetch('/api/check-qris', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trx_id: trxId })
+            });
+            const data = await res.json();
+
+            if (data.status === true && data.data && (data.data.status === "success" || data.data.status === "already")) {
+                clearInterval(qrisInterval);
+                document.getElementById('qris-status').textContent = "Lunas! Membuka akses...";
+                showNotification("Pembayaran Berhasil! Akses dibuka.", "success");
+                
+                let user = JSON.parse(localStorage.getItem('am_user'));
+                user.premium_until = new Date().getTime() + 259200000; // 3 hari
+                localStorage.setItem('am_user', JSON.stringify(user));
+                
+                let db = JSON.parse(localStorage.getItem('am_db'));
+                let dbIndex = db.findIndex(u => u.username === user.username);
+                if(dbIndex !== -1) { db[dbIndex] = user; localStorage.setItem('am_db', JSON.stringify(db)); }
+
+                setTimeout(() => {
+                    document.getElementById('lock-screen').classList.add('hidden');
+                }, 1000);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }, 5000);
 }
 
-function perpanjangAkses() {
-    showNotification("Memproses sistem pembayaran...", "success");
-    setTimeout(() => {
-        selesaikanPembayaran();
-    }, 2000);
+// --- LOGIKA TOOL UTAMA ---
+function setToolOutput(msg, type) {
+    const output = document.getElementById('tool-output');
+    output.innerHTML = msg;
+    output.className = `tool-output ${type}`; 
 }
 
-function selesaikanPembayaran() {
-    let user = JSON.parse(localStorage.getItem('am_user'));
-    let db = JSON.parse(localStorage.getItem('am_db') || '[]');
+async function kirimEmail() {
+    const email = document.getElementById('target-email').value.trim();
+    const btn = document.getElementById('btn-send');
     
-    const timeToAdd = 3 * 24 * 60 * 60 * 1000; // 3 Hari
-    const now = new Date().getTime();
+    if (!email) return showNotification("Masukkan email target terlebih dahulu.", "error");
     
-    if(user.premium_until > now) {
-        user.premium_until += timeToAdd; // Perpanjang
-    } else {
-        user.premium_until = now + timeToAdd; // Berlangganan baru
+    currentEmail = email;
+    btn.textContent = "Mengirim...";
+    setToolOutput("Mengirim email...", "success");
+
+    try {
+        const res = await fetch('/api/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        
+        btn.textContent = "Kirim Link Verifikasi";
+        
+        if (res.ok) {
+            setToolOutput(`Cek Inbox Gmail <b>${email}</b>, lalu salin link-nya ke form di bawah.`, "success");
+        } else {
+            setToolOutput(`Gagal mengirim: ${data.message || data.error}`, "error");
+        }
+    } catch (err) {
+        btn.textContent = "Kirim Link Verifikasi";
+        setToolOutput("Gagal mengirim email. Periksa koneksi.", "error");
     }
+}
 
-    localStorage.setItem('am_user', JSON.stringify(user));
+async function verifikasiLink() {
+    const link = document.getElementById('target-link').value.trim();
+    const btn = document.getElementById('btn-verify');
     
-    let idx = db.findIndex(u => u.email === user.email);
-    if (idx !== -1) {
-        db[idx].premium_until = user.premium_until;
-        localStorage.setItem('am_db', JSON.stringify(db));
+    if (!link) return showNotification("Tempel link verifikasi terlebih dahulu.", "error");
+    
+    btn.textContent = "Memproses...";
+    setToolOutput("Mengeksekusi proses premium...", "success");
+
+    try {
+        const res = await fetch('/api/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ link: link, email: currentEmail })
+        });
+        const data = await res.json();
+        btn.textContent = "Proses & Aktifkan Premium";
+
+        if (res.ok) {
+            showNotification("Premium Berhasil Diaktifkan!", "success");
+            setToolOutput(`
+                🎉 <b>Berhasil Premium!</b><br><br>
+                Silakan login ke aplikasi Alight Motion dengan email:<br>
+                <b>${currentEmail || "yang Anda masukkan tadi"}</b>
+            `, "success");
+            
+            document.getElementById('target-link').value = ''; 
+        } else {
+            setToolOutput(`❌ <b>Gagal Premium</b><br>Alasan: ${data.message || data.error || "Sistem menolak link ini."}`, "error");
+        }
+    } catch (err) {
+        btn.textContent = "Proses & Aktifkan Premium";
+        setToolOutput(`❌ <b>Gagal Premium</b><br>Kesalahan jaringan server.`, "error");
     }
-
-    saveHistory('am_history_trx', { 
-        username: user.username, 
-        item: 'Langganan Generator 3 Hari', 
-        date: new Date().toLocaleString('id-ID') 
-    });
-
-    showNotification("Pembayaran Berhasil! Akses Terbuka.", "success");
-    
-    const btnUnlock = document.getElementById('btn-unlock');
-    if(btnUnlock) btnUnlock.style.display = 'block';
-    document.getElementById('qris-box').style.display = 'none';
-
-    initApp();
 }
