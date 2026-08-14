@@ -2,126 +2,135 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALIGHT HUB — Modern Top Up & Rental Platform</title>
+    <!-- Mengunci Zoom untuk HP/iOS/Android -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ALIGHT HUB — Modern Rental Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #050507;
-            --bg-card: rgba(18, 18, 24, 0.75);
-            --bg-input: #0f0f14;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --border-hover: rgba(255, 255, 255, 0.25);
-            --accent-white: #ffffff;
-            --text-main: #f4f4f6;
-            --text-muted: #8e8e93;
-            --success-color: #34c759;
-            --error-color: #ff3b30;
-            --radius-main: 16px;
-            --radius-sm: 10px;
+            --bg-body: #000000;
+            --bg-card: #09090b;
+            --bg-card-hover: #121215;
+            --bg-input: #18181b;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.22);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-glow: rgba(255, 255, 255, 0.06);
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-pill: 9999px;
         }
 
-        * {
+        /* Prevent Zoom & Base Reset */
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            touch-action: manipulation;
             font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
-                radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
-            padding-bottom: 60px;
+                radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
         }
 
-        /* Header Navigation */
+        /* Navbar */
         .navbar {
             width: 100%;
-            max-width: 900px;
-            padding: 20px 24px;
+            max-width: 800px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
-            z-index: 100;
-            background: rgba(5, 5, 7, 0.8);
+            z-index: 90;
         }
 
         .brand-logo {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: var(--accent-white);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .brand-logo span {
-            background: #fff;
-            color: #000;
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
+            background: #ffffff;
+            color: #000000;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            font-weight: 800;
         }
 
-        .user-nav-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        /* Container & Cards */
+        /* Main Layout */
         .container {
             width: 100%;
-            max-width: 600px;
-            padding: 30px 20px;
+            max-width: 520px;
+            padding: 24px 16px 60px 16px;
         }
 
+        /* Cards */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-main);
-            padding: 28px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            margin-bottom: 24px;
-            transition: border-color 0.3s ease;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
 
         .card:hover {
             border-color: var(--border-hover);
         }
 
-        /* Typography & Form UI */
-        h2, h3 { font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
-        p.subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+        h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+        h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        p.subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
 
+        /* Form UI */
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         input {
@@ -129,66 +138,64 @@
             padding: 14px 16px;
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            color: var(--text-main);
-            font-size: 15px;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
             outline: none;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         input:focus {
-            border-color: var(--accent-white);
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+            border-color: var(--text-primary);
         }
 
-        /* Modern Buttons */
+        /* Buttons */
         .btn {
             width: 100%;
             padding: 14px;
-            background: var(--accent-white);
-            color: #000;
+            background: #ffffff;
+            color: #000000;
             border: none;
-            border-radius: var(--radius-sm);
-            font-size: 15px;
+            border-radius: var(--radius-pill);
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.1s ease, opacity 0.2s ease;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
-            opacity: 0.95;
-        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-outline {
             background: transparent;
-            color: var(--text-main);
+            color: var(--text-primary);
             border: 1px solid var(--border-color);
         }
 
         .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--accent-white);
+            border-color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .btn-sm {
-            padding: 8px 14px;
-            font-size: 13px;
+            padding: 8px 16px;
+            font-size: 12px;
             width: auto;
         }
 
-        /* Tabs for Auth */
+        /* Auth Tab Switcher */
         .tab-switcher {
             display: flex;
             background: var(--bg-input);
             padding: 4px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 24px;
+            border-radius: var(--radius-pill);
+            margin-bottom: 20px;
             border: 1px solid var(--border-color);
         }
 
@@ -198,74 +205,141 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: var(--radius-pill);
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .tab-btn.active {
-            background: var(--bg-card);
-            color: var(--accent-white);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            background: #ffffff;
+            color: #000000;
         }
 
-        /* Badge Tag */
+        /* Badges */
         .badge {
             display: inline-block;
             padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
             font-weight: 700;
             background: rgba(255, 255, 255, 0.1);
-            color: var(--accent-white);
+            color: var(--text-primary);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
-
-        .badge-active { background: rgba(52, 199, 89, 0.15); color: var(--success-color); border-color: rgba(52, 199, 89, 0.3); }
 
         /* QRIS Display Container */
         .qris-wrapper {
             display: none;
             text-align: center;
-            background: rgba(0, 0, 0, 0.4);
+            background: #000000;
             border: 1px dashed var(--border-color);
             padding: 20px;
-            border-radius: var(--radius-sm);
-            margin-top: 20px;
+            border-radius: var(--radius-md);
+            margin-top: 16px;
         }
 
         .qris-wrapper img {
-            max-width: 210px;
+            max-width: 190px;
             border-radius: 8px;
             padding: 8px;
-            background: #fff;
+            background: #ffffff;
             margin: 12px 0;
+        }
+
+        /* Countdown Timer */
+        .qris-timer-badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        /* Quick Bar Dashboard */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         /* Output Status Box */
         .status-box {
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             padding: 16px;
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.6;
             margin-top: 20px;
             display: none;
+            word-break: break-word;
         }
 
         .status-box.success {
-            border-color: var(--success-color);
-            background: rgba(52, 199, 89, 0.05);
-            color: #d1fadf;
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.05);
+            color: #86efac;
         }
 
         .status-box.failed {
-            border-color: var(--error-color);
-            background: rgba(255, 59, 48, 0.05);
-            color: #ffd0d0;
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.05);
+            color: #fca5a5;
+        }
+
+        /* Video Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            background: #000;
+            margin: 12px 0;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
 
         .hidden { display: none !important; }
@@ -294,12 +368,12 @@
 
             <!-- Form Login -->
             <form id="form-login" onsubmit="handleLogin(event)">
-                <h2>Masuk ke Akun</h2>
-                <p class="subtitle">Gunakan Username atau Email Anda untuk melanjutkan.</p>
+                <h2>Masuk Akun</h2>
+                <p class="subtitle">Gunakan Username atau Email untuk melanjutkan.</p>
                 
                 <div class="form-group">
                     <label>Username / Email</label>
-                    <input type="text" id="login-identifier" placeholder="Username atau email..." required>
+                    <input type="text" id="login-identifier" placeholder="Username atau email..." required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
@@ -311,15 +385,15 @@
             <!-- Form Register -->
             <form id="form-register" class="hidden" onsubmit="handleRegister(event)">
                 <h2>Buat Akun Baru</h2>
-                <p class="subtitle">Daftar untuk mulai menyewa akun Alight Motion Premium.</p>
+                <p class="subtitle">Daftar akun untuk menyewa Alight Motion Premium.</p>
                 
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" id="reg-username" placeholder="Pilih username unik..." required>
+                    <input type="text" id="reg-username" placeholder="Username unik..." required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="reg-email" placeholder="contoh@gmail.com" required>
+                    <input type="email" id="reg-email" placeholder="contoh@gmail.com" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
@@ -329,20 +403,30 @@
             </form>
         </div>
 
-        <!-- MAIN DASHBOARD (Akses Layanan Premium) -->
+        <!-- MAIN DASHBOARD (Setelah Login) -->
         <div id="dashboard-section" class="hidden">
             
+            <!-- Quick Menu Bar -->
+            <div class="quick-actions">
+                <button class="btn btn-outline btn-sm" style="flex:1;" onclick="openTutorialModal()">
+                    🎬 Cara Pemakaian
+                </button>
+                <button class="btn btn-outline btn-sm" id="btn-renew-shortcut" style="flex:1;" onclick="scrollToPayment()">
+                    ⚡ Perpanjang Sewa
+                </button>
+            </div>
+
             <!-- Banner Produk Sewa -->
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
                         <span class="badge">Sewa Akses 3 Hari</span>
                         <h2 style="margin-top: 10px;">Alight Motion Premium</h2>
-                        <p class="subtitle" style="margin-bottom: 0;">Bebas edit & bikin project tanpa batas selama 3 hari.</p>
+                        <p class="subtitle" style="margin-bottom: 0;">Edit video tanpa watermark & unlock fitur premium.</p>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-size: 24px; font-weight: 800; color: #fff;">Rp 2.000</span>
-                        <p style="font-size: 12px; color: var(--text-muted);">/ 3 Hari</p>
+                        <span style="font-size: 22px; font-weight: 800; color: #fff;">Rp 2.000</span>
+                        <p style="font-size: 11px; color: var(--text-muted);">/ 3 Hari</p>
                     </div>
                 </div>
 
@@ -350,28 +434,36 @@
 
                 <!-- Step 1: Bayar QRIS -->
                 <div id="payment-step">
-                    <h3>1. Mulai Sewa (Generate QRIS)</h3>
-                    <p class="subtitle">Selesaikan pembayaran Rp 2.000 untuk membuka sesi pemrosesan email.</p>
-                    <button class="btn" id="btn-create-qris" onclick="processQrisPayment()">Bayar Rp 2.000 via QRIS</button>
+                    <h3>1. Transaksi QRIS</h3>
+                    <p class="subtitle">Bayar Rp 2.000 via QRIS untuk mengaktifkan / memperpanjang sewa.</p>
+                    
+                    <button class="btn" id="btn-create-qris" onclick="processQrisPayment()">
+                        Bayar / Perpanjang Rp 2.000 via QRIS
+                    </button>
                     
                     <div class="qris-wrapper" id="qris-box">
-                        <p style="font-size: 13px; color: var(--text-muted);">Scan QRIS di bawah ini:</p>
+                        <div id="qris-timer-container">
+                            <span class="qris-timer-badge">⏳ Waktu Transfer: <span id="qris-countdown">02:00</span></span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-secondary);">Scan QRIS di bawah ini sebelum waktu habis:</p>
+                        
                         <img id="qris-img" src="" alt="QRIS Code">
-                        <p id="qris-amount-display" style="font-size: 16px; font-weight: 700; color: #fff;"></p>
-                        <p id="qris-status-text" style="font-size: 13px; color: #e6a23c; margin-top: 8px;">Menunggu pembayaran...</p>
+                        
+                        <p id="qris-amount-display" style="font-size: 16px; font-weight: 800; color: #fff;"></p>
+                        <p id="qris-status-text" style="font-size: 13px; color: var(--warning); margin-top: 8px;">Menunggu pembayaran...</p>
                     </div>
                 </div>
 
-                <!-- Step 2: Proses Email & Verify Link -->
-                <div id="process-step" class="hidden" style="margin-top: 25px;">
-                    <h3>2. Masukkan Email & Verifikasi</h3>
-                    <p class="subtitle">Sesi aktif. Masukkan Gmail penerima untuk dikirimkan link akses.</p>
+                <!-- Step 2: Proses Email & Verify Link (Muncul setelah bayar / aktif) -->
+                <div id="process-step" class="hidden" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h3>2. Verifikasi Email & Aktifkan</h3>
+                    <p class="subtitle">Sesi aktif. Masukkan Gmail penerima untuk dikirimkan link verifikasi.</p>
                     
                     <div class="form-group">
                         <label>Target Gmail Alight Motion</label>
                         <input type="email" id="target-email" placeholder="contoh@gmail.com">
                     </div>
-                    <button class="btn btn-outline" id="btn-send-email" onclick="executeSendEmail()" style="margin-bottom: 20px;">
+                    <button class="btn btn-outline" id="btn-send-email" onclick="executeSendEmail()" style="margin-bottom: 16px;">
                         Kirim Link Verifikasi ke Email
                     </button>
 
@@ -390,6 +482,24 @@
 
         </div>
 
+    </div>
+
+    <!-- MODAL TUTORIAL VIDEO -->
+    <div class="modal-overlay" id="tutorial-modal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3>Tutorial Cara Pemakaian</h3>
+                <button class="btn btn-outline btn-sm" onclick="closeTutorialModal()" style="padding: 4px 10px;">✕</button>
+            </div>
+            <p class="subtitle" style="margin-bottom: 10px;">Simak video singkat berikut untuk panduan verifikasi akun.</p>
+            
+            <div class="video-container">
+                <!-- Ubah SRC di bawah ini ke link embed video YouTube/panduan Anda -->
+                <iframe id="tutorial-iframe" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+            </div>
+
+            <button class="btn btn-outline" onclick="closeTutorialModal()" style="margin-top: 10px;">Tutup Panduan</button>
+        </div>
     </div>
 
     <script src="app.js"></script>
