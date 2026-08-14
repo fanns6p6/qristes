@@ -2,341 +2,200 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VANNZ STORE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VANNZ STORE | AM Premium</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
         :root {
-            --bg: #000000;
-            --surface: #0a0a0a;
-            --surface-border: #222222;
-            --text-main: #ffffff;
-            --text-dim: #888888;
-            --accent: #ffffff;
-            --accent-invert: #000000;
+            --bg-dark: #0f1115;
+            --neon-green: #39ff14;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-dark); color: #fff; display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
         
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             padding: 20px;
         }
 
-        .app-container {
-            width: 100%;
-            max-width: 480px; 
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            position: relative;
+        .container { width: 100%; max-width: 500px; }
+        .hidden { display: none !important; }
+        
+        /* Typography & Colors */
+        h1, h2, h3 { color: #fff; text-align: center; margin-bottom: 20px; font-weight: 600; }
+        .text-neon { color: var(--neon-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.4); }
+        
+        /* Inputs & Buttons */
+        input {
+            width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            color: #fff; outline: none; transition: 0.3s;
         }
-
-        /* --- GLOBAL TOAST --- */
-        .global-toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
-            z-index: 9999; padding: 14px 24px; border-radius: 50px; font-size: 13px; font-weight: 600;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); opacity: 0; visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
-            display: flex; align-items: center; gap: 8px; border: 1px solid;
+        input:focus { border-color: var(--neon-green); }
+        
+        button {
+            width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600;
+            cursor: pointer; transition: 0.3s; font-size: 15px;
         }
-        .global-toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-        .global-toast.success { background: #ffffff; color: #000000; border-color: #ffffff; }
-        .global-toast.error { background: #0a0a0a; color: #ffffff; border-color: #333333; }
+        .btn-neon { background: var(--neon-green); color: #000; box-shadow: 0 0 15px rgba(57, 255, 20, 0.3); }
+        .btn-neon:hover { box-shadow: 0 0 25px rgba(57, 255, 20, 0.6); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); }
+        
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-tabs button { background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); }
+        .nav-tabs button.active { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
 
-        /* --- MODERN POPUP MODAL --- */
+        /* Pricing Cards */
+        .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .pricing-card { text-align: center; cursor: pointer; transition: 0.3s; }
+        .pricing-card:hover { border-color: var(--neon-green); }
+        .pricing-title { font-size: 14px; color: #aaa; margin-bottom: 5px; }
+        .pricing-price { font-size: 20px; font-weight: 700; color: var(--neon-green); }
+
+        /* Payment Icons (Monokrom) */
+        .payment-support { text-align: center; margin-top: 15px; font-size: 12px; color: #888; }
+        .payment-icons { display: flex; justify-content: center; gap: 10px; margin-top: 8px; filter: grayscale(100%) opacity(0.7); }
+        .payment-icons img { height: 20px; }
+
+        /* History Items */
+        .history-item { padding: 12px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; font-size: 13px; }
+        .status-success { color: var(--neon-green); }
+        .status-failed { color: #ff3333; }
+
+        /* Custom Popup Modern */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 10000; opacity: 0; visibility: hidden; transition: 0.3s ease;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 999;
         }
-        .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-box {
-            background: var(--surface); border: 1px solid var(--surface-border);
-            padding: 24px; border-radius: 16px; text-align: center; width: 90%; max-width: 320px;
-            transform: translateY(20px); transition: 0.3s ease;
-        }
-        .modal-overlay.show .modal-box { transform: translateY(0); }
-        .modal-box h3 { margin-bottom: 10px; font-size: 16px; }
-        .modal-box p { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+        .modal-box { max-width: 350px; text-align: center; }
+        .modal-box h3 { margin-bottom: 10px; }
+        #qris-timer { font-size: 24px; font-weight: bold; color: var(--neon-green); margin: 15px 0; }
+        #qris-image { width: 100%; border-radius: 8px; margin-bottom: 15px; background: #fff; padding: 10px; }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--surface-border); }
-        .logo { font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
-        .logo span { color: var(--text-dim); font-weight: 400; }
-        .btn-outline { background: transparent; border: 1px solid var(--surface-border); color: var(--text-main); padding: 8px 16px; border-radius: 50px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-outline:hover { background: var(--text-main); color: var(--bg); }
-
-        /* Card System */
-        .card { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 24px; position: relative; }
-        h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        p.desc { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
-
-        /* Form & Input */
-        .input-group { margin-bottom: 16px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
-        input, select {
-            width: 100%; background: #000; border: 1px solid var(--surface-border);
-            color: var(--text-main); padding: 14px 16px; border-radius: 12px;
-            font-size: 14px; outline: none; transition: 0.3s;
-        }
-        input:focus, select:focus { border-color: var(--text-main); }
-        
-        .btn-solid { width: 100%; background: var(--accent); color: var(--accent-invert); border: none; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 10px; display: flex; justify-content: center; gap: 8px; }
-        .btn-solid:hover { opacity: 0.8; transform: translateY(-2px); }
-
-        /* Tabs System */
-        .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #000; padding: 4px; border-radius: 12px; border: 1px solid var(--surface-border); overflow-x: auto; }
-        .tab { flex: 1; text-align: center; padding: 10px 8px; font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 8px; color: var(--text-dim); transition: 0.2s; white-space: nowrap; }
-        .tab.active { background: var(--surface-border); color: var(--text-main); }
-
-        /* Lock Overlay (Berlangganan) */
-        .tool-wrapper { position: relative; border-radius: 16px; overflow: hidden; }
-        .lock-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
-            z-index: 10; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 30px; text-align: center;
-        }
-        .lock-overlay.hidden { display: none; }
-        .lock-icon { width: 40px; height: 40px; margin-bottom: 15px; fill: none; stroke: #fff; stroke-width: 2; }
-        
-        /* QRIS Box Minimalis */
-        .qris-box { display: none; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--surface-border); width: 100%; }
-        .qris-box img { max-width: 160px; border-radius: 8px; padding: 5px; margin-bottom: 10px; border: 1px solid var(--surface-border); filter: grayscale(100%); }
-
-        /* Profile Elements */
-        .profile-pic-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: #222; object-fit: cover; border: 2px solid var(--surface-border); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff; }
-        .time-box { font-size: 22px; font-weight: 800; letter-spacing: 2px; margin: 10px 0; text-align: center; padding: 15px; border: 1px solid var(--surface-border); border-radius: 12px; background: #000; }
-        
-        /* History UI */
-        .history-section-title { font-size: 13px; font-weight: 600; margin: 25px 0 10px 0; color: var(--text-main); border-left: 2px solid #fff; padding-left: 8px; }
-        .history-list { list-style: none; font-size: 12px; color: var(--text-dim); }
-        .history-item { padding: 12px; border: 1px solid var(--surface-border); border-radius: 10px; background: #000; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .history-item span.success { color: #fff; font-weight: 600; }
-        .history-item span.failed { color: #555; font-weight: 600; text-decoration: line-through; }
-
-        /* Tutor Video Card */
-        .tutor-card { background: #000; border: 1px solid var(--surface-border); border-radius: 12px; padding: 15px; margin-top: 10px; }
-        .tutor-card h3 { font-size: 13px; margin-bottom: 8px; color: #fff; }
-        .tutor-video-wrapper { position: relative; width: 100%; padding-bottom: 56.25%; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 15px; border: 1px solid var(--surface-border); }
-        .tutor-video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; filter: grayscale(50%); }
-
-        .hidden { display: none !important; }
-        footer { text-align: center; font-size: 10px; color: var(--text-dim); margin-top: 40px; padding-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+        pre { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; font-size: 12px; color: var(--neon-green); overflow-x: auto; margin-top: 15px;}
     </style>
 </head>
 <body>
 
-    <!-- Global Notifications -->
-    <div id="gui-toast" class="global-toast hidden"></div>
+<div class="container">
+    <h1 class="text-neon">VANNZ STORE</h1>
 
-    <!-- Modern Popup Validation -->
-    <div id="modern-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="modal-title">Peringatan</h3>
-            <p id="modal-desc">Pesan error di sini.</p>
-            <button class="btn-solid" onclick="closeModal()">Mengerti</button>
-        </div>
+    <!-- 1. AUTH SECTION -->
+    <div id="auth-view" class="glass">
+        <h2>Login / Daftar</h2>
+        <input type="text" id="auth-user" placeholder="Username / Email">
+        <input type="password" id="auth-pass" placeholder="Password">
+        <button class="btn-neon" onclick="login()">Masuk ke Dashboard</button>
     </div>
 
-    <div class="app-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">VANNZ <span>STORE</span></div>
-            <div id="nav-user"><button class="btn-outline">Guest</button></div>
+    <!-- 2. MAIN APP SECTION -->
+    <div id="app-view" class="hidden">
+        
+        <div class="nav-tabs">
+            <button class="active" onclick="switchTab('dashboard')" id="btn-tab-dashboard">Dashboard</button>
+            <button onclick="switchTab('history')" id="btn-tab-history">Riwayat</button>
+            <button onclick="switchTab('profile')" id="btn-tab-profile">Profil</button>
         </div>
 
-        <!-- AUTH & PRE-LOGIN SECTION -->
-        <div class="card" id="auth-section">
-            <div class="tabs">
-                <div class="tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
-                <div class="tab" id="tab-reg" onclick="switchAuthTab('register')">Daftar</div>
-                <div class="tab" id="tab-tutor" onclick="switchAuthTab('tutor')">Tutor</div>
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="glass">
+            <h3>Video Tutorial</h3>
+            <div style="background:#000; height:180px; border-radius:8px; display:flex; align-items:center; justify-content:center; border:1px solid var(--glass-border); margin-bottom: 20px;">
+                <span style="color:#666;">[ Video Cara Pemakaian ]</span>
             </div>
 
-            <!-- Login Form -->
-            <form id="form-login" onsubmit="handleLogin(event)">
-                <h2>Akses Akun</h2>
-                <div class="input-group">
-                    <label>Username / Email</label>
-                    <input type="text" id="log-id" required>
+            <h3>Pilih Paket Berlangganan</h3>
+            <div class="pricing-grid">
+                <div class="glass pricing-card" onclick="initiatePayment('sharing', 7000)">
+                    <div class="pricing-title">Sharing 1 Tahun</div>
+                    <div class="pricing-price">Rp 7.000</div>
                 </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="log-pass" required>
-                </div>
-                <button type="submit" class="btn-solid">Masuk</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="form-register" class="hidden" onsubmit="handleRegister(event)">
-                <h2>Daftar Baru</h2>
-                <div class="input-group">
-                    <label>Username</label>
-                    <input type="text" id="reg-user" required>
-                </div>
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="reg-email" required>
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="reg-pass" required>
-                </div>
-                <button type="submit" class="btn-solid">Buat Akun</button>
-            </form>
-
-            <!-- Tutor Videos (Pre-Login) -->
-            <div id="form-tutor" class="hidden">
-                <h2>Panduan Penggunaan</h2>
-                <p class="desc">Pelajari cara memakai, berlangganan, dan aktivasi fitur premium.</p>
-                <div class="tutor-card">
-                    <h3>💡 Cara Memakai Web</h3>
-                    <div class="tutor-video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Memakai" allowfullscreen></iframe>
-                    </div>
-                    <h3>💡 Cara Berlangganan</h3>
-                    <div class="tutor-video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Berlangganan" allowfullscreen></iframe>
-                    </div>
-                    <h3>💡 Cara Aktivasi Premium</h3>
-                    <div class="tutor-video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Akun Premium" allowfullscreen></iframe>
-                    </div>
+                <div class="glass pricing-card" onclick="initiatePayment('private', 10000)">
+                    <div class="pricing-title">Private 1 Tahun</div>
+                    <div class="pricing-price">Rp 10.000</div>
                 </div>
             </div>
-        </div>
-
-        <!-- DASHBOARD NAVIGATION TABS (Muncul pas udah login) -->
-        <div id="dashboard-menu" class="hidden">
-            <div class="tabs">
-                <div class="tab active" id="tab-menu-dashboard" onclick="switchDashTab('dashboard')">Dashboard</div>
-                <div class="tab" id="tab-menu-profil" onclick="switchDashTab('profil')">Profil</div>
-                <div class="tab" id="tab-menu-history" onclick="switchDashTab('history')">Riwayat</div>
-            </div>
-        </div>
-
-        <!-- 1. SECTION: DASHBOARD -->
-        <div id="section-dashboard" class="hidden tool-wrapper">
-            <!-- Lock Screen -->
-            <div class="lock-overlay" id="lock-screen">
-                <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <h2>Akses Terkunci</h2>
-                <p style="font-size: 12px; color: #aaa; margin-top: 5px;">Silakan berlangganan akses alat generator.</p>
-
-                <div id="qris-payment-area" style="width: 100%; margin-top: 25px;">
-                    <button class="btn-solid" id="btn-unlock" onclick="bayarQris()">Langganan 3 Hari (Rp 2.000)</button>
-                    
-                    <div class="qris-box" id="qris-box">
-                        <img id="qris-img" src="https://via.placeholder.com/150/ffffff/000000?text=QRIS" alt="Scan QRIS">
-                        <h3 id="qris-amount">Rp 2.000</h3>
-                        <p style="font-size: 11px; color: #aaa; margin-top: 5px;" id="qris-status">Status: Menunggu Pembayaran...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Tool Area -->
-            <div class="card" style="border-radius: 0; min-height: 400px; padding-bottom: 40px;">
-                <h2>Alat Generator Premium</h2>
-                <p class="desc">Buat akun premium untuk pelanggan Anda dengan mudah.</p>
-
-                <!-- Perpanjang Button (Hanya muncul jika langganan aktif) -->
-                <div id="dashboard-perpanjang-container" class="hidden" style="margin-bottom: 25px;">
-                    <button class="btn-solid" onclick="perpanjangAkses()" style="background: transparent; color: #fff; border: 1px solid #fff;">Perpanjang Langganan (Rp 2.000)</button>
-                    <hr style="border: 0; border-top: 1px solid var(--surface-border); margin: 20px 0;">
-                </div>
-
-                <div class="input-group">
-                    <label>Tipe Layanan</label>
-                    <select id="tipe-layanan">
-                        <option value="private">Premium Private (1 Tahun)</option>
-                        <option value="sharing">Premium Sharing (1 Tahun)</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Masukkan Target Email</label>
-                    <input type="email" id="target-email" placeholder="Wajib diisi Gmail Fresh">
-                </div>
-                
-                <button class="btn-solid" onclick="prosesPembuatanAkun()" id="btn-proses">
-                    Proses & Buat Akun
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. SECTION: PROFIL -->
-        <div id="section-profil" class="card hidden">
-            <h2>Profil Pengguna</h2>
-            <p class="desc">Kelola langganan dan keamanan akun Anda.</p>
             
-            <div class="profile-pic-container">
-                <div class="profile-avatar" id="avatar-preview">U</div>
-                <label class="btn-outline" style="cursor: pointer; font-size: 11px; padding: 6px 14px;">
-                    Ganti Foto Profil
-                    <input type="file" id="input-pp" accept="image/*" style="display: none;" onchange="updateProfilePic(event)">
-                </label>
-            </div>
-
-            <!-- Sisa Waktu Langganan Dipindah ke Sini -->
-            <div class="input-group">
-                <label>Sisa Waktu Langganan</label>
-                <div class="time-box" id="time-display">00:00:00</div>
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid var(--surface-border); margin: 20px 0;">
-
-            <form onsubmit="handleUpdateProfile(event)">
-                <div class="input-group">
-                    <label>Ubah Username</label>
-                    <input type="text" id="profile-username" required>
+            <div class="payment-support">
+                Support Pembayaran
+                <div class="payment-icons">
+                    <!-- Gunakan icon monokrom sesuai request -->
+                    <span style="border:1px solid #555; padding:2px 6px; border-radius:4px;">QRIS</span>
+                    <span style="border:1px solid #555; padding:2px 6px; border-radius:4px;">DANA</span>
+                    <span style="border:1px solid #555; padding:2px 6px; border-radius:4px;">GOPAY</span>
                 </div>
-                <div class="input-group">
-                    <label>Password Baru (Opsional)</label>
-                    <input type="password" id="profile-password" placeholder="Kosongkan jika tidak diubah">
-                </div>
-                <button type="submit" class="btn-solid" style="background: transparent; border: 1px solid var(--surface-border);">Simpan Perubahan</button>
-            </form>
+            </div>
         </div>
 
-        <!-- 3. SECTION: RIWAYAT -->
-        <div id="section-history" class="card hidden">
-            <h2>Riwayat Aktivitas</h2>
-            <p class="desc">Laporan log operasional akun Anda.</p>
+        <!-- AM Activation Tab (Muncul setelah bayar) -->
+        <div id="tab-activation" class="glass hidden">
+            <h3 class="text-neon">Aktivasi Alight Motion</h3>
+            <p style="font-size:13px; margin-bottom:15px; text-align:center; color:#ccc;">Paket Aktif: <b id="active-plan-text" class="text-neon"></b></p>
             
-            <div class="history-section-title">Riwayat Transaksi Langganan</div>
-            <ul class="history-list" id="history-trx-container">
-                <li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>
-            </ul>
+            <input type="email" id="email-input" placeholder="Masukkan Gmail Fresh..." required>
+            <button class="btn-neon" id="btn-send" style="margin-bottom:20px;">Kirim Request</button>
 
-            <div class="history-section-title">Riwayat Create Akun Premium</div>
-            <ul class="history-list" id="history-create-container">
-                <li class="history-item" style="justify-content: center;">Belum ada riwayat pembuatan akun.</li>
-            </ul>
+            <input type="text" id="verify-input" placeholder="Tempel Link Verifikasi dari Email..." required>
+            <button class="btn-outline" id="btn-verify">Verifikasi Link</button>
 
-            <div class="history-section-title">Riwayat Email Berhasil Premium</div>
-            <ul class="history-list" id="history-success-container">
-                <li class="history-item" style="justify-content: center;">Belum ada email berhasil.</li>
-            </ul>
-
-            <div class="history-section-title">Riwayat Email Gagal Premium</div>
-            <ul class="history-list" id="history-failed-container">
-                <li class="history-item" style="justify-content: center;">Belum ada email gagal.</li>
-            </ul>
+            <pre id="response-output">Menunggu tindakan...</pre>
         </div>
 
-        <footer>
-            web creat by vannz
-        </footer>
+        <!-- History Tab -->
+        <div id="tab-history" class="glass hidden">
+            <h3>Riwayat Transaksi</h3>
+            <div id="history-list">
+                <!-- Data riwayat masuk ke sini -->
+            </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="tab-profile" class="glass hidden">
+            <h3>Profil Akun</h3>
+            <p style="margin-bottom:10px;">Username: <b id="profile-name" class="text-neon"></b></p>
+            <button class="btn-outline" onclick="logout()" style="margin-bottom: 15px;">Logout</button>
+            
+            <a href="https://wa.me/6281234567890?text=Halo%20Admin%20Vannz%20Store,%20saya%20mau%20bertanya%20tentang%20layanan%20premium..." 
+               target="_blank" style="text-decoration:none;">
+                <button class="btn-neon" style="background:#25D366; color:#fff;">Hubungi Admin (WA)</button>
+            </a>
+        </div>
     </div>
+</div>
 
-    <script src="app.js"></script>
+<!-- Modal QRIS Payment -->
+<div id="modal-qris" class="modal-overlay hidden">
+    <div class="glass modal-box">
+        <h3>Selesaikan Pembayaran</h3>
+        <p style="font-size: 13px; color:#aaa;">Scan QRIS di bawah ini</p>
+        <img id="qris-image" src="" alt="QR Code" class="hidden">
+        <div id="qris-loading">Membuat QRIS...</div>
+        <div id="qris-timer">02:00</div>
+        <p id="qris-status-text" style="font-size:12px; margin-bottom:15px;">Menunggu pembayaran...</p>
+        <button class="btn-outline" onclick="cancelPayment()">Batal</button>
+    </div>
+</div>
+
+<!-- Modal Popup Alert Modern -->
+<div id="modal-alert" class="modal-overlay hidden">
+    <div class="glass modal-box" style="max-width: 300px;">
+        <h3 id="alert-title" class="text-neon">Peringatan</h3>
+        <p id="alert-msg" style="font-size: 14px; margin-bottom: 20px;"></p>
+        <button class="btn-neon" onclick="closeAlert()">Mengerti</button>
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
