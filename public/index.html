@@ -149,19 +149,19 @@
             border: 2px solid var(--surface-border); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff;
         }
         
-        .time-box { font-size: 28px; font-weight: 800; letter-spacing: 2px; margin: 15px 0; text-align: center; padding: 20px; border: 1px solid var(--surface-border); border-radius: 12px; background: #000; }
+        .time-box { font-size: 22px; font-weight: 800; letter-spacing: 2px; margin: 10px 0; text-align: center; padding: 15px; border: 1px solid var(--surface-border); border-radius: 12px; background: #000; }
         
-        /* History & Tutor UI */
+        /* History UI */
         .history-section-title { font-size: 13px; font-weight: 600; margin: 15px 0 8px 0; color: var(--text-main); border-left: 2px solid #fff; padding-left: 8px; }
         .history-list { list-style: none; font-size: 12px; color: var(--text-dim); margin-bottom: 15px; }
         .history-item { padding: 12px; border: 1px solid var(--surface-border); border-radius: 10px; background: #000; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .history-item span.success { color: #fff; font-weight: 600; }
         .history-item span.failed { color: #ff4d4d; font-weight: 600; }
 
-        /* Tutor Video Card */
-        .tutor-card { background: #000; border: 1px solid var(--surface-border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .tutor-card h3 { font-size: 14px; margin-bottom: 8px; color: #fff; }
-        .tutor-video-wrapper { position: relative; width: 100%; padding-bottom: 56.25%; background: #111; border-radius: 8px; overflow: hidden; }
+        /* Tutor Video Card inside Dashboard */
+        .tutor-card { background: #000; border: 1px solid var(--surface-border); border-radius: 12px; padding: 15px; margin-top: 25px; }
+        .tutor-card h3 { font-size: 13px; margin-bottom: 8px; color: #fff; }
+        .tutor-video-wrapper { position: relative; width: 100%; padding-bottom: 56.25%; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
         .tutor-video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
         .hidden { display: none !important; }
@@ -223,13 +223,12 @@
         <div id="dashboard-menu" class="hidden">
             <div class="tabs">
                 <div class="tab active" id="tab-menu-dashboard" onclick="switchDashTab('dashboard')">Dashboard</div>
-                <div class="tab" id="tab-menu-tutor" onclick="switchDashTab('tutor')">Tutor</div>
                 <div class="tab" id="tab-menu-profil" onclick="switchDashTab('profil')">Profil</div>
                 <div class="tab" id="tab-menu-history" onclick="switchDashTab('history')">Riwayat</div>
             </div>
         </div>
 
-        <!-- 1. SECTION: DASHBOARD (Alat & Generator) -->
+        <!-- 1. SECTION: DASHBOARD (Berlangganan, Generator, Perpanjang, & Tutor) -->
         <div id="section-dashboard" class="hidden tool-wrapper">
             <div class="lock-overlay" id="lock-screen">
                 <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -243,7 +242,7 @@
                 </ul>
 
                 <div id="qris-payment-area" style="width: 100%; margin-top: 10px;">
-                    <button class="btn-solid" id="btn-unlock" onclick="bayarQris()">Beli Akses (Rp 2.000)</button>
+                    <button class="btn-solid" id="btn-unlock" onclick="bayarQris()">Berlangganan Sekarang (Rp 2.000)</button>
                     
                     <div class="qris-box" id="qris-box">
                         <img id="qris-img" src="" alt="Scan QRIS">
@@ -255,12 +254,25 @@
             </div>
 
             <div class="card" style="border-radius: 0; min-height: 400px; padding-bottom: 40px;">
-                <h2>Proses Premium</h2>
-                <p class="desc">Sistem pembuatan akun premium otomatis tanpa batas.</p>
+                <h2>Dashboard Utama</h2>
+                <p class="desc">Kelola pembuatan akun premium dan masa aktif Anda di sini.</p>
+
+                <!-- Status & Perpanjang Button (Hanya muncul jika sudah berlangganan) -->
+                <div class="input-group">
+                    <label>Sisa Masa Aktif Berlangganan</label>
+                    <div class="time-box" id="time-display">00:00:00</div>
+                </div>
+
+                <div id="dashboard-perpanjang-container" class="hidden" style="margin-bottom: 25px;">
+                    <button class="btn-solid" onclick="perpanjangAkses()" style="background: #fff; color: #000;">Perpanjang Masa Aktif (Rp 2.000)</button>
+                </div>
                 
+                <hr style="border: 0; border-top: 1px solid var(--surface-border); margin: 20px 0;">
+
+                <h2>Alat Generator Premium</h2>
                 <div id="tool-output" class="tool-output hidden"></div>
 
-                <div class="input-group" style="margin-top: 20px;">
+                <div class="input-group" style="margin-top: 15px;">
                     <label>1. Masukkan Target Email (Gmail)</label>
                     <input type="email" id="target-email" placeholder="email@gmail.com">
                 </div>
@@ -268,48 +280,36 @@
                     Kirim Link Verifikasi
                 </button>
 
-                <div class="input-group" style="margin-top: 30px;">
+                <div class="input-group" style="margin-top: 20px;">
                     <label>2. Tempel Link Dari Email</label>
                     <input type="text" id="target-link" placeholder="https://alightmotion.com/verify...">
                 </div>
                 <button class="btn-solid" onclick="verifikasiLink()" id="btn-verify">
                     Proses & Aktifkan Premium
                 </button>
-            </div>
-        </div>
 
-        <!-- 2. SECTION: TUTOR (Video Panduan) -->
-        <div id="section-tutor" class="card hidden">
-            <h2>Tutorial & Panduan</h2>
-            <p class="desc">Pelajari cara menggunakan alat, berlangganan, dan aktivasi premium.</p>
-            
-            <div class="tutor-card">
-                <h3>1. Cara Memakai Alat Creator</h3>
-                <div class="tutor-video-wrapper">
-                    <!-- Contoh Embed Video Tutorial -->
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Memakai" allowfullscreen></iframe>
-                </div>
-            </div>
-
-            <div class="tutor-card">
-                <h3>2. Cara Berlangganan & Bayar QRIS</h3>
-                <div class="tutor-video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Berlangganan" allowfullscreen></iframe>
-                </div>
-            </div>
-
-            <div class="tutor-card">
-                <h3>3. Cara Bikin Akun Premium 1 Tahun Unlimited</h3>
-                <div class="tutor-video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Premium" allowfullscreen></iframe>
+                <!-- TUTOR SECTION DI DALAM DASHBOARD -->
+                <div class="tutor-card">
+                    <h3>💡 Tutorial & Panduan Penggunaan</h3>
+                    <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 12px;">Panduan cara pakai, cara berlangganan, dan cara buat akun premium.</div>
+                    
+                    <div class="tutor-video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Memakai" allowfullscreen></iframe>
+                    </div>
+                    <div class="tutor-video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Berlangganan & Perpanjang" allowfullscreen></iframe>
+                    </div>
+                    <div class="tutor-video-wrapper">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Cara Akun Premium" allowfullscreen></iframe>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. SECTION: PROFIL (Sisa Waktu, Ubah Username/PW, Pasang PP, Perpanjang) -->
+        <!-- 2. SECTION: PROFIL (Sisa Waktu, Ubah Username/PW, Pasang PP) -->
         <div id="section-profil" class="card hidden">
             <h2>Profil Pengguna</h2>
-            <p class="desc">Kelola informasi akun dan sisa masa aktif akses Anda.</p>
+            <p class="desc">Kelola informasi akun pribadi Anda.</p>
             
             <div class="profile-pic-container">
                 <div class="profile-avatar" id="avatar-preview">U</div>
@@ -317,11 +317,6 @@
                     Ganti Foto Profil
                     <input type="file" id="input-pp" accept="image/*" style="display: none;" onchange="updateProfilePic(event)">
                 </label>
-            </div>
-
-            <div class="input-group">
-                <label>Sisa Waktu Akses</label>
-                <div class="time-box" id="time-display" style="font-size: 22px; padding: 12px; margin-top: 5px;">00:00:00</div>
             </div>
 
             <form onsubmit="handleUpdateProfile(event)">
@@ -335,15 +330,9 @@
                 </div>
                 <button type="submit" class="btn-solid">Simpan Perubahan</button>
             </form>
-
-            <!-- Tombol Perpanjang hanya muncul jika sudah berlangganan -->
-            <div id="perpanjang-container" class="hidden" style="margin-top: 20px; border-top: 1px solid var(--surface-border); padding-top: 20px;">
-                <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 10px;">Ingin menambah durasi langganan? Perpanjang sekarang.</p>
-                <button class="btn-solid" onclick="perpanjangAkses()" style="background: #fff; color: #000;">Perpanjang Akses (Rp 2.000)</button>
-            </div>
         </div>
 
-        <!-- 4. SECTION: RIWAYAT (Transaksi, Buat Akun, Email Sukses, Email Gagal) -->
+        <!-- 3. SECTION: RIWAYAT (Transaksi, Buat Akun, Email Sukses, Email Gagal) -->
         <div id="section-history" class="card hidden">
             <h2>Riwayat Aktivitas & Transaksi</h2>
             <p class="desc">Laporan lengkap riwayat pembayaran dan proses pembuatan akun.</p>

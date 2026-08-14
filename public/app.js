@@ -23,7 +23,7 @@ function switchAuthTab(tab) {
 }
 
 function switchDashTab(tab) {
-    const sections = ['dashboard', 'tutor', 'profil', 'history'];
+    const sections = ['dashboard', 'profil', 'history'];
     sections.forEach(s => {
         document.getElementById(`section-${s}`).classList.add('hidden');
         document.getElementById(`tab-menu-${s}`).classList.remove('active');
@@ -58,7 +58,6 @@ function initApp() {
         document.getElementById('auth-section').classList.remove('hidden');
         document.getElementById('dashboard-menu').classList.add('hidden');
         document.getElementById('section-dashboard').classList.add('hidden');
-        document.getElementById('section-tutor').classList.add('hidden');
         document.getElementById('section-profil').classList.add('hidden');
         document.getElementById('section-history').classList.add('hidden');
         document.getElementById('nav-user').innerHTML = `<button class="btn-outline">Guest</button>`;
@@ -116,7 +115,6 @@ function updateProfilePic(e) {
         user.avatar = base64Image;
         localStorage.setItem('am_user', JSON.stringify(user));
 
-        // Update DB
         let db = JSON.parse(localStorage.getItem('am_db') || '[]');
         let idx = db.findIndex(u => u.username === user.username);
         if (idx !== -1) {
@@ -137,8 +135,6 @@ function handleUpdateProfile(e) {
     let newPass = document.getElementById('profile-password').value.trim();
 
     let db = JSON.parse(localStorage.getItem('am_db') || '[]');
-    
-    // Check if username taken by another user
     if (db.find(u => u.username === newUsername && u.username !== user.username)) {
         return showNotification("Username sudah digunakan orang lain.", "error");
     }
@@ -164,7 +160,7 @@ function handleUpdateProfile(e) {
 // --- STATUS & COUNTDOWN ---
 function checkPremiumStatus(user) {
     const lockScreen = document.getElementById('lock-screen');
-    const perpanjangContainer = document.getElementById('perpanjang-container');
+    const perpanjangContainer = document.getElementById('dashboard-perpanjang-container');
     
     if(countdownInterval) clearInterval(countdownInterval);
 
@@ -174,7 +170,7 @@ function checkPremiumStatus(user) {
 
         if (diff > 0) {
             lockScreen.classList.add('hidden'); 
-            perpanjangContainer.classList.remove('hidden'); // Muncul jika udah berlangganan
+            perpanjangContainer.classList.remove('hidden'); // Muncul di dashboard jika sudah berlangganan
             
             let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -184,11 +180,10 @@ function checkPremiumStatus(user) {
             minutes = minutes < 10 ? '0' + minutes : minutes;
             seconds = seconds < 10 ? '0' + seconds : seconds;
             
-            let timeStr = `${hours}:${minutes}:${seconds}`;
-            document.getElementById('time-display').textContent = timeStr;
+            document.getElementById('time-display').textContent = `${hours}:${minutes}:${seconds}`;
         } else {
             lockScreen.classList.remove('hidden'); 
-            perpanjangContainer.classList.add('hidden'); // Sembunyikan jika belum berlangganan/habis
+            perpanjangContainer.classList.add('hidden'); // Sembunyikan jika belum/habis
             document.getElementById('time-display').textContent = "AKSES HABIS";
             if(countdownInterval) clearInterval(countdownInterval);
         }
@@ -207,7 +202,7 @@ function renderAllHistories(username) {
 
     // 1. Transaksi
     const cTrx = document.getElementById('history-trx-container');
-    cTrx.innerHTML = historyTrx.length === lightArrayEmpty(cTrx, historyTrx) ? `<li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>` : '';
+    cTrx.innerHTML = historyTrx.length === 0 ? `<li class="history-item" style="justify-content: center;">Belum ada riwayat transaksi.</li>` : '';
     historyTrx.slice().reverse().forEach(item => {
         cTrx.innerHTML += `<li class="history-item"><div><div><strong>${item.item}</strong></div><div style="font-size:10px; margin-top:3px;">${item.date}</div></div><div style="text-align:right;"><div>Rp 2.000</div><span class="success">✔ Berhasil</span></div></li>`;
     });
@@ -234,8 +229,6 @@ function renderAllHistories(username) {
     });
 }
 
-function lightArrayEmpty(el, arr) { return arr.length === 0; }
-
 // --- PEMBAYARAN & QRIS ---
 async function bayarQris() {
     const btn = document.getElementById('btn-unlock');
@@ -255,15 +248,15 @@ async function bayarQris() {
             document.getElementById('qris-box').style.display = 'block';
             document.getElementById('qris-img').src = data.data.qrImage;
             
-            pollQrisStatus(data.data.depositId, 'Beli Akses Baru');
+            pollQrisStatus(data.data.depositId, 'Berlangganan Baru (Akses 3 Hari)');
         } else {
             showNotification("Sistem pembayaran gangguan.", "error");
-            btn.textContent = "Beli Akses (Rp 2.000)";
+            btn.textContent = "Berlangganan Sekarang (Rp 2.000)";
             btn.disabled = false;
         }
     } catch (err) {
         showNotification("Error jaringan server.", "error");
-        btn.textContent = "Beli Akses (Rp 2.000)";
+        btn.textContent = "Berlangganan Sekarang (Rp 2.000)";
         btn.disabled = false;
     }
 }
@@ -278,14 +271,15 @@ async function perpanjangAkses() {
         const data = await res.json();
 
         if (data && data.success && data.data) {
-            switchDashTab('dashboard');
+            const lockScreen = document.getElementById('lock-screen');
+            lockScreen.classList.remove('hidden');
             
             const btn = document.getElementById('btn-unlock');
             btn.style.display = 'none';
             document.getElementById('qris-box').style.display = 'block';
             document.getElementById('qris-img').src = data.data.qrImage;
             
-            pollQrisStatus(data.data.depositId, 'Perpanjangan Akses (3 Hari)');
+            pollQrisStatus(data.data.depositId, 'Perpanjangan Akses (+3 Hari)');
         } else {
             showNotification("Gagal membuat QRIS perpanjangan.", "error");
         }
@@ -309,7 +303,7 @@ function pollQrisStatus(trxId, labelItem) {
             if (data.status === true && data.data && (data.data.status === "success" || data.data.status === "already")) {
                 clearInterval(qrisInterval);
                 
-                showNotification("Pembayaran Sukses! Akses Terbuka.", "success");
+                showNotification("Pembayaran Sukses! Akses Diperbarui.", "success");
                 document.getElementById('qris-status').textContent = "Pembayaran Berhasil!";
 
                 let user = JSON.parse(localStorage.getItem('am_user'));
@@ -340,7 +334,7 @@ function pollQrisStatus(trxId, labelItem) {
                     initApp(); 
                     document.getElementById('btn-unlock').style.display = 'block';
                     document.getElementById('btn-unlock').disabled = false;
-                    document.getElementById('btn-unlock').textContent = "Beli Akses (Rp 2.000)";
+                    document.getElementById('btn-unlock').textContent = "Berlangganan Sekarang (Rp 2.000)";
                     document.getElementById('qris-box').style.display = 'none';
                     document.getElementById('qris-status').textContent = "Status: Menunggu Pembayaran...";
                 }, 2000);
@@ -417,7 +411,6 @@ async function verifikasiLink() {
                 <b>${currentEmail || "yang Anda masukkan tadi"}</b>
             `, "success");
 
-            // Catat history sukses
             hCreate.push({ username: user.username, email: currentEmail, date: dateStr, status: 'success' });
             localStorage.setItem('am_history_create', JSON.stringify(hCreate));
 
@@ -430,7 +423,6 @@ async function verifikasiLink() {
             let reason = data.message || data.error || "Link Expired.";
             setToolOutput(`❌ <b>Gagal Premium</b><br>Alasan: ${reason}`, "error");
 
-            // Catat history gagal
             hCreate.push({ username: user.username, email: currentEmail || "Unknown", date: dateStr, status: 'failed' });
             localStorage.setItem('am_history_create', JSON.stringify(hCreate));
 
