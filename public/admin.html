@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel - AlightMotion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #121212;
+            --border: #2a2a2a;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --accent: #ffffff;
+            --accent-invert: #000000;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 450px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .view-section { display: none; padding: 20px; }
+        .view-section.active { display: block; }
+        h2 { font-size: 20px; margin-bottom: 8px; }
+        p.subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; font-weight: 600; }
+        input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text-main); padding: 14px; border-radius: 8px; font-size: 14px; outline: none; }
+        .btn { width: 100%; background: var(--accent); color: var(--accent-invert); border: none; padding: 14px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn:hover { opacity: 0.8; }
+        .btn-logout { border: 1px solid #ff4d4d; color: #ff4d4d; background: transparent; }
+        .box { background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .box-title { font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; color: var(--text-dim); }
+        pre { background: #000; color: #fff; padding: 15px; border-radius: 8px; font-size: 11px; overflow-x: auto; border: 1px solid var(--border); min-height: 60px; white-space: pre-wrap; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--text-main); color: var(--bg); padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">Notifikasi</div>
+
+    <div class="container">
+        <!-- 1. LOGIN ADMIN -->
+        <div class="view-section active" id="view-admin-login">
+            <h2>🛡️ Admin Portal</h2>
+            <p class="subtitle">Masukkan sandi rahasia untuk mengakses panel generator token.</p>
+            <div class="input-group">
+                <label>Password Admin</label>
+                <input type="password" id="admin-pass-input" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="loginAdmin()">Masuk Panel</button>
+        </div>
+
+        <!-- 2. PANEL ADMIN UTAMA -->
+        <div class="view-section" id="view-admin-panel">
+            <h2>Panel Admin</h2>
+            <p class="subtitle">Kelola dan generate kode token pelanggan.</p>
+            
+            <div class="box">
+                <div class="box-title">Buat Kode Aktivasi Baru</div>
+                <div class="input-group">
+                    <label>Durasi Masa Aktif</label>
+                    <select id="admin-token-duration">
+                        <option value="7">1 Minggu (7 Hari)</option>
+                        <option value="30">1 Bulan (30 Hari)</option>
+                        <option value="1">1 Hari (24 Jam)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="generateToken()">Generate Kode</button>
+            </div>
+
+            <div class="box-title">Daftar Kode Aktif (Belum dipakai)</div>
+            <pre id="admin-token-list">Kosong</pre>
+
+            <button class="btn btn-logout" style="margin-top: 20px;" onclick="logoutAdmin()">Keluar Admin</button>
+        </div>
+    </div>
+
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        let dbTokens = JSON.parse(localStorage.getItem('db_tokens') || '[]');
+        let isAdminActive = localStorage.getItem('is_admin_active') === 'true';
+
+        window.onload = () => {
+            if (isAdminActive) {
+                document.getElementById('view-admin-login').classList.remove('active');
+                document.getElementById('view-admin-panel').classList.add('active');
+                renderAdminTokens();
+            }
+        };
+
+        function loginAdmin() {
+            const pass = document.getElementById('admin-pass-input').value.trim();
+            if (pass === '000111333444') {
+                isAdminActive = true;
+                localStorage.setItem('is_admin_active', 'true');
+                document.getElementById('admin-pass-input').value = '';
+                document.getElementById('view-admin-login').classList.remove('active');
+                document.getElementById('view-admin-panel').classList.add('active');
+                renderAdminTokens();
+                showToast("Login Admin Berhasil!");
+            } else {
+                showToast("Password Salah!");
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminActive = false;
+            localStorage.setItem('is_admin_active', 'false');
+            document.getElementById('view-admin-panel').classList.remove('active');
+            document.getElementById('view-admin-login').classList.add('active');
+            showToast("Keluar dari Admin");
+        }
+
+        function generateToken() {
+            const days = parseInt(document.getElementById('admin-token-duration').value);
+            const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+            const newCode = `AM-${randomStr}`;
+
+            dbTokens.push({ code: newCode, duration: days });
+            localStorage.setItem('db_tokens', JSON.stringify(dbTokens));
+            renderAdminTokens();
+            showToast(`Kode (${days} Hari) Berhasil Dibuat!`);
+        }
+
+        function renderAdminTokens() {
+            dbTokens = JSON.parse(localStorage.getItem('db_tokens') || '[]');
+            const output = document.getElementById('admin-token-list');
+            if(dbTokens.length === 0) {
+                output.textContent = "Belum ada kode yang dibuat.";
+            } else {
+                output.textContent = dbTokens.map(t => `${t.code} (Aktif: ${t.duration} Hari)`).join('\n');
+            }
+        }
+    </script>
+</body>
+</html>
